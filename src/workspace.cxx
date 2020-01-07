@@ -283,10 +283,10 @@ void Workspace::move_sorted(){
         std::deque<unsigned int> index = {(unsigned int) i, (unsigned int) j, (unsigned int) k};
         Container neighbors = getNeighborhood(index);
         Agent currentAgent = sortedAgents.at(i).at(j).at(k);
-        currentAgent.compute_force_sorted(neighbors);
-        currentAgent.direction = currentAgent.cohesion*wCohesion
-      + currentAgent.alignment*wAlignment
-      + currentAgent.separation*wSeparation;
+        sortedAgents.at(i).at(j).at(k).compute_force_sorted(neighbors);
+        sortedAgents.at(i).at(j).at(k).direction = sortedAgents.at(i).at(j).at(k).cohesion*wCohesion
+      + sortedAgents.at(i).at(j).at(k).alignment*wAlignment
+      + sortedAgents.at(i).at(j).at(k).separation*wSeparation;
 
       }
     }
@@ -297,26 +297,26 @@ void Workspace::move_sorted(){
     for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
       for(size_t k = 0; k < sortedAgents.at(i).at(j).size(); k++){
         Agent currentAgent = sortedAgents.at(i).at(j).at(k);
-        currentAgent.velocity += dt*currentAgent.direction;
+        sortedAgents.at(i).at(j).at(k).velocity += dt*sortedAgents.at(i).at(j).at(k).direction;
 
-        double speed = currentAgent.velocity.norm()/max_speed;
+        double speed = sortedAgents.at(i).at(j).at(k).velocity.norm()/max_speed;
         if (speed > 1. && speed>0.) {
-          currentAgent.velocity /= speed;
+          sortedAgents.at(i).at(j).at(k).velocity /= speed;
         }
-        currentAgent.position += dt*currentAgent.velocity;
+        sortedAgents.at(i).at(j).at(k).position += dt*sortedAgents.at(i).at(j).at(k).velocity;
 
-        if(currentAgent.position.x <40)
-          currentAgent.position.x = lx - 40;
-        if(currentAgent.position.x >lx - 40)
-          currentAgent.position.x = 40;
-        if(currentAgent.position.y <40)
-          currentAgent.position.y = ly - 40;
-        if(currentAgent.position.y >ly - 40)
-          currentAgent.position.y = 40;
-        if(currentAgent.position.z <40)
-          currentAgent.position.z = lz - 40;
-        if(currentAgent.position.z >lz - 40)
-          currentAgent.position.z = 40;
+        if(sortedAgents.at(i).at(j).at(k).position.x <40)
+          sortedAgents.at(i).at(j).at(k).position.x = lx - 40;
+        if(sortedAgents.at(i).at(j).at(k).position.x >lx - 40)
+          sortedAgents.at(i).at(j).at(k).position.x = 40;
+        if(sortedAgents.at(i).at(j).at(k).position.y <40)
+          sortedAgents.at(i).at(j).at(k).position.y = ly - 40;
+        if(sortedAgents.at(i).at(j).at(k).position.y >ly - 40)
+          sortedAgents.at(i).at(j).at(k).position.y = 40;
+        if(sortedAgents.at(i).at(j).at(k).position.z <40)
+          sortedAgents.at(i).at(j).at(k).position.z = lz - 40;
+        if(sortedAgents.at(i).at(j).at(k).position.z >lz - 40)
+          sortedAgents.at(i).at(j).at(k).position.z = 40;
 
       }
     }
@@ -324,18 +324,26 @@ void Workspace::move_sorted(){
   this->updateAgentsDeque();
 }
 
+
 void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
     // perform nsteps time steps of the simulation
     int step = 0;
-    while (step++ < nsteps) {
-      this->move();
-      // store every 20 steps
-      if (step%20 == 0){
-        //this->sortAgents();
+    this->sortAgents();
+    while (step++ < nsteps){
+      this->move_sorted();
+      if (step % 20 ==0){
         save(step);
+        this->sortAgents();
       }
+      // store every 20 steps
+/*
+      if (step%20 == 0){
+        this->sortAgents();
+        save(step);
+      }*/
+
     }
 }
 

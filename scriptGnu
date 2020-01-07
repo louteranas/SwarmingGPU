@@ -1,4 +1,4 @@
 do for [ii=1:1000] {
     splot 'src/boids.xyz' using 2:3:4 every :::ii::ii pt 7 lc 3
-    pause 0.1
+    pause 0.05
 }
