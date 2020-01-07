@@ -273,9 +273,9 @@ void Workspace::simulate(int nsteps) {
     int step = 0;
     while (step++ < nsteps) {
       this->move();
-      this->updateAgentsDeque();
       // store every 20 steps
       if (step%20 == 0){
+        this->sortAgents();
         save(step);
       } 
     }
@@ -285,7 +285,6 @@ void Workspace::save(int stepid) {
   std::ofstream myfile;
   std::ofstream myfile2;
 
-  this->sortAgents();
   myfile.open("boids.xyz", stepid==0 ? std::ios::out : std::ios::app);
 
     myfile << std::endl;
