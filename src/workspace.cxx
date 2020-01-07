@@ -330,7 +330,7 @@ void Workspace::simulate(int nsteps) {
     // perform nsteps time steps of the simulation
     int step = 0;
     while (step++ < nsteps) {
-      this->move_sorted();
+      this->move();
       // store every 20 steps
       if (step%20 == 0){
         //this->sortAgents();
