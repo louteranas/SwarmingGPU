@@ -13,6 +13,8 @@ protected:
   Container agents;
   voxelsContainer sortedAgents;
   unsigned int na;
+  //A initialiser
+  unsigned int sideCount = 3;
 
   Real dt;
   int time;
@@ -43,7 +45,7 @@ protected:
   void sortAgentsByY();
   void sortAgentsByZ();
   void updateAgentsDeque();
-  std::deque<Agent>getNeighborhood(std::deque<unsigned int> indexs, unsigned int sideCount);
+  std::deque<Agent>getNeighborhood(std::deque<unsigned int> indexs);
 
 public:
   Workspace(ArgumentParser &parser);
@@ -53,6 +55,7 @@ public:
   Real rc, Real ra, Real rs);
 
   void move();
+  void move_sorted();
   void simulate(int nsteps);
   void save(int stepid);
 };

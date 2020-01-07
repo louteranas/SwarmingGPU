@@ -35,7 +35,7 @@ Workspace::Workspace(size_t nAgents,
              wCohesion(wc), wAlignment(wa), wSeparation(ws),
              rCohesion(rc), rAlignment(ra), rSeparation(rs),
              max_speed(20.), max_force(80.)
-{ this->init(); 
+{ this->init();
   this->sortAgents();}
 
 void Workspace::init(){
@@ -194,27 +194,28 @@ void Workspace::sortAgents(){
 
 }
 
-std::deque<Agent> Workspace::getNeighborhood(std::deque<unsigned int> indexs, unsigned int sideCount){
+std::deque<Agent> Workspace::getNeighborhood(std::deque<unsigned int> indexs){
 
-  std::deque<Agent> neighors;
-  int radius = sideCount/2; 
+  std::deque<Agent> neighbors;
+  int radius = sideCount/2;
   // std::cout << sideCount << " is bigger than " << pow(na, 1.0/3.0) << " ? " << std::endl;
   // std::cout << ( pow(sideCount,3) > na) << " ? " << std::endl;
   // std::cout << ( sideCount > pow(na, 1.0/3.0)) << " ? " << std::endl;
   // we compare sideCount^3 with na instade of sideCount with square cube of na becuare it causes float issues
   if( pow(sideCount,3) > na){
     perror("Nighborhood radius is too big, try a smaller one");
-    return neighors;
+    return neighbors;
   }
   for(int i = -radius; i < radius+1; i++){
     for(int j = -radius; j<radius+1; j++){
       for(int k = -radius; k<radius+1; k++){
-        neighors.push_back(sortedAgents.at((indexs.at(0)+i)%3).at((indexs.at(1)+j)%3).at((indexs.at(2)+k)%3));
+        if (i != 0 && j!= 0 && k !=0)
+          neighbors.push_back(sortedAgents.at((indexs.at(0)+i)%3).at((indexs.at(1)+j)%3).at((indexs.at(2)+k)%3));
       }
     }
   }
-  std::cout << "la taille des voisins est " << neighors.size()<<std::endl;
-  return neighors;
+  //std::cout << "la taille des voisins est " << neighbors.size()<<std::endl;
+  return neighbors;
 }
 
 void Workspace::updateAgentsDeque(){
@@ -231,14 +232,19 @@ void Workspace::updateAgentsDeque(){
 
 void Workspace::move()
 {
+
     // Compute forces applied on specific agent
     for(size_t k = 0; k< na; k++){
+
       agents[k].compute_force(agents, k, rCohesion);
+
 
       agents[k].direction = agents[k].cohesion*wCohesion
         + agents[k].alignment*wAlignment
         + agents[k].separation*wSeparation;
     }
+
+
 
     // Time integraion using euler method
     for(size_t k = 0; k< na; k++){
@@ -264,6 +270,58 @@ void Workspace::move()
         agents[k].position.z = 40;
 
     }
+
+
+}
+
+void Workspace::move_sorted(){
+
+
+  for(size_t i = 0; i < sortedAgents.size(); i++){
+    for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
+      for(size_t k = 0; k < sortedAgents.at(i).at(j).size(); k++){
+        std::deque<unsigned int> index = {(unsigned int) i, (unsigned int) j, (unsigned int) k};
+        Container neighbors = getNeighborhood(index);
+        Agent currentAgent = sortedAgents.at(i).at(j).at(k);
+        currentAgent.compute_force_sorted(neighbors);
+        currentAgent.direction = currentAgent.cohesion*wCohesion
+      + currentAgent.alignment*wAlignment
+      + currentAgent.separation*wSeparation;
+
+      }
+    }
+  }
+
+
+  for(size_t i = 0; i < sortedAgents.size(); i++){
+    for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
+      for(size_t k = 0; k < sortedAgents.at(i).at(j).size(); k++){
+        Agent currentAgent = sortedAgents.at(i).at(j).at(k);
+        currentAgent.velocity += dt*currentAgent.direction;
+
+        double speed = currentAgent.velocity.norm()/max_speed;
+        if (speed > 1. && speed>0.) {
+          currentAgent.velocity /= speed;
+        }
+        currentAgent.position += dt*currentAgent.velocity;
+
+        if(currentAgent.position.x <40)
+          currentAgent.position.x = lx - 40;
+        if(currentAgent.position.x >lx - 40)
+          currentAgent.position.x = 40;
+        if(currentAgent.position.y <40)
+          currentAgent.position.y = ly - 40;
+        if(currentAgent.position.y >ly - 40)
+          currentAgent.position.y = 40;
+        if(currentAgent.position.z <40)
+          currentAgent.position.z = lz - 40;
+        if(currentAgent.position.z >lz - 40)
+          currentAgent.position.z = 40;
+
+      }
+    }
+  }
+  this->updateAgentsDeque();
 }
 
 void Workspace::simulate(int nsteps) {
@@ -272,12 +330,12 @@ void Workspace::simulate(int nsteps) {
     // perform nsteps time steps of the simulation
     int step = 0;
     while (step++ < nsteps) {
-      this->move();
+      this->move_sorted();
       // store every 20 steps
       if (step%20 == 0){
-        this->sortAgents();
+        //this->sortAgents();
         save(step);
-      } 
+      }
     }
 }
 
@@ -293,9 +351,9 @@ void Workspace::save(int stepid) {
         myfile << "B " << agents[p].position;
 
     myfile.close();
-  
-  // visual debgging 
-  
+
+  // visual debgging
+
   // updateAgentsDeque();
   // myfile2.open("boidsModified.xyz", stepid==0 ? std::ios::out : std::ios::app);
 

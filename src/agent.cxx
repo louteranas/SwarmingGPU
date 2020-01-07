@@ -1,4 +1,6 @@
 #include "agent.hxx"
+#include "workspace.hxx"
+
 
 Agent::Agent(const Vector &pos, const Vector &vel, const Vector &dir){
   position = pos;
@@ -70,6 +72,70 @@ void Agent::compute_force(Container &agent_list, size_t index, double rad) {
     }
   }
 }
+
+void Agent::compute_force_sorted(Container &neighbors) {
+  cohesion = Zeros();
+  alignment = Zeros();
+  separation = Zeros();
+
+  int count_c = 0 , count_s = 0 , count_a = 0 ;
+
+  for(size_t i = 0; i < neighbors.size(); i++) {
+    Real dist = (this->position - neighbors[i].position).norm();
+    if (dist < rs && dist > 0.){
+      separation += (this->position - neighbors[i].position).normalized()/dist;
+      ++count_s;
+    }
+    if (dist < ra){
+      alignment += neighbors[i].velocity;
+      ++count_a;
+    }
+    if (dist < rc){
+      cohesion += neighbors[i].position;
+      ++count_c;
+    }
+  }
+
+  // Compute separation contribution
+  if (count_s > 0){
+    separation.normalize();
+    separation *= max_force;
+    separation -= velocity;
+    if (separation.norm() > max_force){
+      separation.normalize();
+      separation *= max_force;
+    }
+  }
+  // Compute alignment contribution
+  if (count_a > 0){
+    if (alignment.norm() > 0.0){
+      alignment.normalize();
+      alignment *= max_force;
+    }
+    alignment -= velocity;
+    if (alignment.norm() > max_force){
+      alignment.normalize();
+      alignment *= max_force;
+    }
+  }
+  // Compute cohesion contribution
+  if (count_c > 0){
+    // Compute center of gravity
+    cohesion /= count_c;
+
+    // Direction of displacement
+    cohesion -= position;
+
+    cohesion.normalize();
+    cohesion *= max_speed;
+    cohesion -= velocity;
+    if (cohesion.norm() > max_force){
+      cohesion.normalize();
+      cohesion *= max_force;
+    }
+  }
+}
+
 
 size_t Agent::find_closest(Container &agent_list, size_t index) {
   size_t closest_agent = index;
