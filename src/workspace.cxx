@@ -69,29 +69,28 @@ void Workspace::init(){
   }
 }
 
-std::deque<Agent> sortList(std::deque<Agent> unsortedAgents, unsigned int index){
-  std::deque<Agent> agents = unsortedAgents;
-  Agent temp = agents.at(0);
-  for(size_t j = agents.size()-1; j > 0; j--){
-    for(size_t k = 0; k<j ; k++){
-      if(agents.at(k).position[index] > agents.at(k+1).position[index]){
-        temp = agents.at(k);
-        agents.at(k) = agents.at(k+1);
-        agents.at(k+1) = temp;
+void sortList(std::deque<Agent> &unsortedAgents, unsigned int coord, unsigned int startIndex, unsigned int endIndex){
+  Agent temp = unsortedAgents.at(startIndex);
+  for(size_t j = endIndex-1; j > startIndex; j--){
+    for(size_t k = startIndex; k<j ; k++){
+      if(unsortedAgents.at(k).position[coord] > unsortedAgents.at(k+1).position[coord]){
+        temp = unsortedAgents.at(k);
+        unsortedAgents.at(k) = unsortedAgents.at(k+1);
+        unsortedAgents.at(k+1) = temp;
       }
     }
   }
-  return agents;
 }
 
-std::deque<Agent> createDeque(std::deque<std::deque<Agent>> agentsPlan){
-  std::deque<Agent> agents;
-  for(size_t i = 0; i < agentsPlan.size(); i++){
+std::deque<Agent> createDeque(unsigned int startIndex, unsigned int endIndex){
+  std::deque<Agent> output;
+  /*for(size_t i = 0; i < agentsPlan.size(); i++){
     for(size_t j = 0; j< agentsPlan.at(i).size(); j++){
-      agents.push_back(agentsPlan.at(i).at(j));
+      output.push_back(agentsPlan.at(i).at(j));
     }
   }
-  return agents;
+  */
+  return output;
 }
 
 void printDeque(std::deque<Agent> agents, unsigned int index){
@@ -103,23 +102,7 @@ void printDeque(std::deque<Agent> agents, unsigned int index){
 void Workspace::sortAgentsByX(){
   // std::cout << pow(na, 1.0/3.0) << std::endl;
   // Sorting agents by X value
-  agents = sortList(agents, 0);
-
-  // creating the voxel container witch defines the ZY planes
-  unsigned int sideSize = pow(na, 1.0/3.0);
-  int counter = 0;
-  for(size_t i = 0; i < sideSize; i++){
-    std::deque<std::deque<Agent>> agentsZY;
-    for(size_t j = 0; j < sideSize; j++){
-      Container agentsY;
-      for(size_t k = 0; k < sideSize; k++){
-        agentsY.push_back(agents.at(counter));
-        counter++;
-      }
-      agentsZY.push_back(agentsY);
-    }
-    sortedAgents.push_back(agentsZY);
-  }
+  sortList(agents, 0, 0, agents.size());
 
   // for debug
   // for(size_t i = 0; i < sortedAgents.size(); i++){
@@ -133,6 +116,13 @@ void Workspace::sortAgentsByX(){
 void Workspace::sortAgentsByY(){
 
   // creating the voxel container witch defines the ZY planes
+  unsigned int numberOfIterations = pow(na, 1.0/3.0);
+  unsigned int numberOfPlanAgents = pow(numberOfIterations, 2);
+
+  for(unsigned int i = 0; i < numberOfIterations-1; i++){
+    sortList(agents, 1, i * numberOfPlanAgents, (i+1) * numberOfPlanAgents);
+  }
+  /*
   for(size_t i = 0; i < sortedAgents.size(); i++){
     std::deque<Agent> agentsPlan = createDeque(sortedAgents.at(i));
     agentsPlan = sortList(agentsPlan, 1);
@@ -144,6 +134,7 @@ void Workspace::sortAgentsByY(){
       }
     }
   }
+  */
 
   // for debug
   // for(size_t i = 0; i < sortedAgents.size(); i++){
@@ -156,7 +147,15 @@ void Workspace::sortAgentsByY(){
 }
 
 void Workspace::sortAgentsByZ(){
+  // creating the voxel container witch defines the ZY planes
+  unsigned int  numberOfLineAgents = pow(na, 1.0/3.0);
+  unsigned int numberOfIterations = pow(numberOfLineAgents, 2);
 
+  for(unsigned int i = 0; i < numberOfIterations-1; i++){
+    sortList(agents, 2, i * numberOfLineAgents, (i+1) * numberOfLineAgents);
+  }
+
+  /*
   // creating the voxel container witch defines the ZY planes
   for(size_t i = 0; i < sortedAgents.size(); i++){
     for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
@@ -165,6 +164,7 @@ void Workspace::sortAgentsByZ(){
       }
     }
   }
+  */
 
   // for debug
   // for(size_t i = 0; i < sortedAgents.size(); i++){
@@ -185,7 +185,7 @@ void Workspace::sortAgents(){
   // we finally sort by Z to create voxels
   this->sortAgentsByZ();
 
-  this->updateAgentsDeque();
+  //this->updateAgentsDeque();
   // std::deque<unsigned int> indexs;
   // indexs.push_back(0);
   // indexs.push_back(0);
