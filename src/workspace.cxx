@@ -184,7 +184,7 @@ void Workspace::sortAgents(){
   this->sortAgentsByY();
   // we finally sort by Z to create voxels
   this->sortAgentsByZ();
-
+  
   this->updateAgentsDeque();
   // std::deque<unsigned int> indexs;
   // indexs.push_back(0);
@@ -192,11 +192,14 @@ void Workspace::sortAgents(){
   // indexs.push_back(0);
   // getNeighborhood(indexs, 5);
 
+  for (uint i = 0; i < agents.size(); i++){
+    getNeighborhood(i);
+  }
 }
 
-std::deque<Agent> Workspace::getNeighborhood(std::deque<unsigned int> indexs){
+void Workspace::getNeighborhood(uint index){
 
-  std::deque<Agent> neighbors;
+  agents.at(index).neighbors.clear();
   int radius = sideCount/2;
   // std::cout << sideCount << " is bigger than " << pow(na, 1.0/3.0) << " ? " << std::endl;
   // std::cout << ( pow(sideCount,3) > na) << " ? " << std::endl;
@@ -204,18 +207,18 @@ std::deque<Agent> Workspace::getNeighborhood(std::deque<unsigned int> indexs){
   // we compare sideCount^3 with na instade of sideCount with square cube of na becuare it causes float issues
   if( pow(sideCount,3) > na){
     perror("Nighborhood radius is too big, try a smaller one");
-    return neighbors;
+    return;
   }
-  for(int i = -radius; i < radius+1; i++){
-    for(int j = -radius; j<radius+1; j++){
-      for(int k = -radius; k<radius+1; k++){
-        if (i != 0 && j!= 0 && k !=0)
-          neighbors.push_back(sortedAgents.at((indexs.at(0)+i)%3).at((indexs.at(1)+j)%3).at((indexs.at(2)+k)%3));
+
+  int cote = pow(na, 1./3.);
+  for (int z = - radius; z < radius + 1; z++){
+    for (int y = - radius; z < radius + 1; y++){
+      for (int x = - radius; x < radius + 1; x++){
+        agents.at(index).neighbors.push_back(agents.at(((x * cote * cote) + (y * cote) + z) % na);
       }
     }
   }
   //std::cout << "la taille des voisins est " << neighbors.size()<<std::endl;
-  return neighbors;
 }
 
 void Workspace::updateAgentsDeque(){
@@ -281,9 +284,9 @@ void Workspace::move_sorted(){
     for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
       for(size_t k = 0; k < sortedAgents.at(i).at(j).size(); k++){
         std::deque<unsigned int> index = {(unsigned int) i, (unsigned int) j, (unsigned int) k};
-        Container neighbors = getNeighborhood(index);
-        Agent currentAgent = sortedAgents.at(i).at(j).at(k);
-        sortedAgents.at(i).at(j).at(k).compute_force_sorted(neighbors);
+        //A mettre juste après le tri
+        //Container neighbors = getNeighborhood(index);
+        sortedAgents.at(i).at(j).at(k).compute_force_sorted();
         sortedAgents.at(i).at(j).at(k).direction = sortedAgents.at(i).at(j).at(k).cohesion*wCohesion
       + sortedAgents.at(i).at(j).at(k).alignment*wAlignment
       + sortedAgents.at(i).at(j).at(k).separation*wSeparation;
@@ -296,7 +299,6 @@ void Workspace::move_sorted(){
   for(size_t i = 0; i < sortedAgents.size(); i++){
     for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
       for(size_t k = 0; k < sortedAgents.at(i).at(j).size(); k++){
-        Agent currentAgent = sortedAgents.at(i).at(j).at(k);
         sortedAgents.at(i).at(j).at(k).velocity += dt*sortedAgents.at(i).at(j).at(k).direction;
 
         double speed = sortedAgents.at(i).at(j).at(k).velocity.norm()/max_speed;

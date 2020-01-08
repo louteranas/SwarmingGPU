@@ -13,6 +13,8 @@ typedef enum {
 
 class Agent{
   public :
+    std::deque<Agent> neighbors;
+
     Vector position;
     Vector velocity;
     Vector direction;
@@ -32,7 +34,7 @@ class Agent{
     void compute_force(Container &agent_list, size_t index, double dist);
 
     //Paramètres : liste de voisinage, index du point considéré, (sideCount // 2) rayon du voisinage
-    void compute_force_sorted(Container &neighbors);
+    void compute_force_sorted();
 
     size_t find_closest(Container &agent_list, size_t index);
 };

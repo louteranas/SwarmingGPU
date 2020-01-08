@@ -73,7 +73,7 @@ void Agent::compute_force(Container &agent_list, size_t index, double rad) {
   }
 }
 
-void Agent::compute_force_sorted(Container &neighbors) {
+void Agent::compute_force_sorted() {
   cohesion = Zeros();
   alignment = Zeros();
   separation = Zeros();
