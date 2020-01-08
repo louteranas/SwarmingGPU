@@ -155,6 +155,22 @@ void Workspace::sortAgentsByZ(){
     sortList(agents, 2, i * numberOfLineAgents, (i+1) * numberOfLineAgents);
   }
 
+  bool wrongCase = true;
+  for(unsigned int i = 0; i < numberOfIterations-1; i++){
+    for(unsigned int k = 0; k < numberOfLineAgents-1; k++){
+      wrongCase &= (agents.at((i * numberOfLineAgents) + k).position[2] < agents.at((i * numberOfLineAgents) + (k+1)).position[2]);
+    }
+  }
+  // for(unsigned int i = 0; i < numberOfIterations-1; i++){
+  //   for(unsigned int j = 0; j < numberOfIterations-1; j++){
+  //     for(unsigned int k = 0; k < numberOfLineAgents-1; k++){
+  //       for(unsigned int l = 0; l < numberOfLineAgents-1; l++)
+  //       wrongCase &= (agents.at((i * numberOfIterations)+ (j*numberOfLineAgents) + k).position[1] < agents.at((i * numberOfIterations)+ ((j+1)*numberOfLineAgents) + l).position[1]);
+  //     }
+  //   }
+  // }
+  if(!wrongCase)
+    std::cout << "Sorting is wrong." << std::endl; 
   /*
   // creating the voxel container witch defines the ZY planes
   for(size_t i = 0; i < sortedAgents.size(); i++){
@@ -176,6 +192,7 @@ void Workspace::sortAgentsByZ(){
   // }
 
 }
+
 
 void Workspace::sortAgents(){
   // we first sort by X to create YZ planes
