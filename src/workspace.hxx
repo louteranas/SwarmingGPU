@@ -45,7 +45,7 @@ protected:
   void sortAgentsByY();
   void sortAgentsByZ();
   void updateAgentsDeque();
-  std::deque<Agent>getNeighborhood(std::deque<unsigned int> indexs);
+  void getNeighborhood(uint index);
 
 public:
   Workspace(ArgumentParser &parser);
