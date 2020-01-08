@@ -283,8 +283,9 @@ void Workspace::simulate(int nsteps) {
     int step = 0;
     this->sortAgents();
     while (step++ < nsteps){
-      this->move_sorted();
+      this->move();
       if (step % 20 ==0){
+        std::cout << step << std::endl;
         save(step);
         this->sortAgents();
       }

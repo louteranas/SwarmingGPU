@@ -55,7 +55,6 @@ public:
   Real rc, Real ra, Real rs);
 
   void move();
-  void move_sorted();
   void simulate(int nsteps);
   void save(int stepid);
 };
