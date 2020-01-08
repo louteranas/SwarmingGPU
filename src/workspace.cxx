@@ -185,24 +185,34 @@ void Workspace::sortAgents(){
 void Workspace::getNeighborhood(uint index){
 
   agents.at(index).neighbors.clear();
+
   unsigned int radius = sideCount/2;
   // std::cout << sideCount << " is bigger than " << pow(na, 1.0/3.0) << " ? " << std::endl;
   // std::cout << ( pow(sideCount,3) > na) << " ? " << std::endl;
   // std::cout << ( sideCount > pow(na, 1.0/3.0)) << " ? " << std::endl;
   // we compare sideCount^3 with na instade of sideCount with square cube of na becuare it causes float issues
   if( pow(sideCount,3) > na){
-    perror("Nighborhood radius is too big, try a smaller one");
+    perror("Neighborhood radius is too big, try a smaller one");
     return;
   }
-
   int cote = pow(na, 1./3.);
-  for (int z = - radius; z < radius + 1; z++){
-    for (int y = - radius; y < radius + 1; y++){
-      for (int x = - radius; x < radius + 1; x++){
-        agents.at(index).neighbors.push_back(agents.at(((x * cote * cote) + (y * cote) + z) % na));
+  int currentZ = index % cote;
+  index = index / cote;
+  int currentY = index % cote;
+  index = index / cote;
+  int currentX = index % cote; 
+  
+
+  for (int z = - radius; z <(int) radius + 1; z++){
+    for (int y = - radius; y < (int) radius + 1; y++){
+      for (int x = - radius; x < (int)radius + 1; x++){
+        if (x != 0 && y != 0 && z != 0){
+            agents.at(index).neighbors.push_back(agents.at(((( currentX + x) * cote * cote) + ((currentY + y)  * cote) + ( currentZ + z)) % na));
+        }
       }
     }
   }
+
   //std::cout << "la taille des voisins est " << neighbors.size()<<std::endl;
 }
 
@@ -269,22 +279,24 @@ void Workspace::simulate(int nsteps) {
     std::cout << " starting the mouvement " << std::endl;
     this->sortAgents();
     std::cout << " First Sort Done ! " << std::endl;
-    /*
+    
     while (step++ < nsteps){
       this->move();
       // if (step % 100 == 0){
       //   this->sortAgents();
       // }
       if (step % 20 == 0){
-        this->sortAgents();
         std::cout << step << std::endl;
+        this->sortAgents();
         save(step);
       }
-      // store every 20 steps
+      if (step %1000 == 0){
+        std::cout << step << std::endl;
+      }
 
 
     }
-    */
+    
 }
 
 void Workspace::save(int stepid) {

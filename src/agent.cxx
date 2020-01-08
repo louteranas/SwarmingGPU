@@ -79,7 +79,7 @@ void Agent::compute_force_sorted() {
   separation = Zeros();
 
   int count_c = 0 , count_s = 0 , count_a = 0 ;
-
+  //std::cout << neighbors.size() << "\n";
   for(size_t i = 0; i < neighbors.size(); i++) {
     Real dist = (this->position - neighbors[i].position).norm();
     if (dist < rs && dist > 0.){

@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
   ArgumentParser parser;
 
   // Add options to parser
-  parser.addOption("agents", 216);
+  parser.addOption("agents", 1000);
   parser.addOption("steps", 20000);
   parser.addOption("wc", 7.0);//7.0 1.0);
   parser.addOption("wa", 12.0);// 12.0 1.0);
