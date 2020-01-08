@@ -200,7 +200,7 @@ void Workspace::sortAgents(){
 void Workspace::getNeighborhood(uint index){
 
   agents.at(index).neighbors.clear();
-  int radius = sideCount/2;
+  unsigned int radius = sideCount/2;
   // std::cout << sideCount << " is bigger than " << pow(na, 1.0/3.0) << " ? " << std::endl;
   // std::cout << ( pow(sideCount,3) > na) << " ? " << std::endl;
   // std::cout << ( sideCount > pow(na, 1.0/3.0)) << " ? " << std::endl;
@@ -212,7 +212,7 @@ void Workspace::getNeighborhood(uint index){
 
   int cote = pow(na, 1./3.);
   for (int z = - radius; z < radius + 1; z++){
-    for (int y = - radius; z < radius + 1; y++){
+    for (int y = - radius; y < radius + 1; y++){
       for (int x = - radius; x < radius + 1; x++){
         agents.at(index).neighbors.push_back(agents.at(((x * cote * cote) + (y * cote) + z) % na));
       }
@@ -281,13 +281,18 @@ void Workspace::simulate(int nsteps) {
     save(0);
     // perform nsteps time steps of the simulation
     int step = 0;
+    std::cout << " starting the mouvement " << std::endl;
     this->sortAgents();
+    std::cout << " First Sort Done ! " << std::endl;
     while (step++ < nsteps){
       this->move();
-      if (step % 20 ==0){
+      // if (step % 100 == 0){
+      //   this->sortAgents();
+      // }
+      if (step % 20 == 0){
+        this->sortAgents();
         std::cout << step << std::endl;
         save(step);
-        this->sortAgents();
       }
       // store every 20 steps
 /*
