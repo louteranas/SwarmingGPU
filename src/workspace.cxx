@@ -116,25 +116,14 @@ void Workspace::sortAgentsByX(){
 void Workspace::sortAgentsByY(){
 
   // creating the voxel container witch defines the ZY planes
-  unsigned int numberOfIterations = pow(na, 1.0/3.0);
-  unsigned int numberOfPlanAgents = pow(numberOfIterations, 2);
+  unsigned int numberOfIterations = pow(na, 1.0/3.0);  //2
+  unsigned int numberOfPlanAgents = pow(numberOfIterations, 2); //4
 
-  for(unsigned int i = 0; i < numberOfIterations-1; i++){
+  for(unsigned int i = 0; i < numberOfIterations; i++){
     sortList(agents, 1, i * numberOfPlanAgents, (i+1) * numberOfPlanAgents);
   }
-  /*
-  for(size_t i = 0; i < sortedAgents.size(); i++){
-    std::deque<Agent> agentsPlan = createDeque(sortedAgents.at(i));
-    agentsPlan = sortList(agentsPlan, 1);
-    int counter = 0;
-    for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
-      for(size_t k = 0; k < sortedAgents.at(i).at(j).size(); k++){
-        sortedAgents.at(i).at(j).at(k) = agentsPlan.at(counter);
-        counter++;
-      }
-    }
-  }
-  */
+
+
 
   // for debug
   // for(size_t i = 0; i < sortedAgents.size(); i++){
@@ -151,36 +140,21 @@ void Workspace::sortAgentsByZ(){
   unsigned int  numberOfLineAgents = pow(na, 1.0/3.0);
   unsigned int numberOfIterations = pow(numberOfLineAgents, 2);
 
-  for(unsigned int i = 0; i < numberOfIterations-1; i++){
+  for(unsigned int i = 0; i < numberOfIterations; i++){
     sortList(agents, 2, i * numberOfLineAgents, (i+1) * numberOfLineAgents);
   }
 
   bool wrongCase = true;
-  for(unsigned int i = 0; i < numberOfIterations-1; i++){
-    for(unsigned int k = 0; k < numberOfLineAgents-1; k++){
-      wrongCase &= (agents.at((i * numberOfLineAgents) + k).position[2] < agents.at((i * numberOfLineAgents) + (k+1)).position[2]);
+  for(unsigned int i = 0; i < numberOfIterations; i++){
+    for(unsigned int k = 0; k < numberOfLineAgents - 1; k++){
+      wrongCase = wrongCase && (agents.at((i * numberOfLineAgents) + k).position[2] < agents.at((i * numberOfLineAgents) + (k+1)).position[2]);
     }
   }
-  // for(unsigned int i = 0; i < numberOfIterations-1; i++){
-  //   for(unsigned int j = 0; j < numberOfIterations-1; j++){
-  //     for(unsigned int k = 0; k < numberOfLineAgents-1; k++){
-  //       for(unsigned int l = 0; l < numberOfLineAgents-1; l++)
-  //       wrongCase &= (agents.at((i * numberOfIterations)+ (j*numberOfLineAgents) + k).position[1] < agents.at((i * numberOfIterations)+ ((j+1)*numberOfLineAgents) + l).position[1]);
-  //     }
-  //   }
-  // }
+
+/*
   if(!wrongCase)
     std::cout << "Sorting is wrong." << std::endl; 
-  /*
-  // creating the voxel container witch defines the ZY planes
-  for(size_t i = 0; i < sortedAgents.size(); i++){
-    for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
-      for(size_t k = 0; k < sortedAgents.at(i).at(j).size(); k++){
-        sortedAgents.at(i).at(j) = sortList(sortedAgents.at(i).at(j), 2);
-      }
-    }
-  }
-  */
+*/
 
   // for debug
   // for(size_t i = 0; i < sortedAgents.size(); i++){
@@ -202,12 +176,6 @@ void Workspace::sortAgents(){
   // we finally sort by Z to create voxels
   this->sortAgentsByZ();
 
-  //this->updateAgentsDeque();
-  // std::deque<unsigned int> indexs;
-  // indexs.push_back(0);
-  // indexs.push_back(0);
-  // indexs.push_back(0);
-  // getNeighborhood(indexs, 5);
 
   for (uint i = 0; i < agents.size(); i++){
     getNeighborhood(i);
@@ -301,6 +269,7 @@ void Workspace::simulate(int nsteps) {
     std::cout << " starting the mouvement " << std::endl;
     this->sortAgents();
     std::cout << " First Sort Done ! " << std::endl;
+    /*
     while (step++ < nsteps){
       this->move();
       // if (step % 100 == 0){
@@ -312,13 +281,10 @@ void Workspace::simulate(int nsteps) {
         save(step);
       }
       // store every 20 steps
-/*
-      if (step%20 == 0){
-        this->sortAgents();
-        save(step);
-      }*/
+
 
     }
+    */
 }
 
 void Workspace::save(int stepid) {
