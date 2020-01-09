@@ -73,29 +73,29 @@ void Agent::compute_force(Container &agent_list, size_t index, double rad) {
   }
 }
 
-void Agent::compute_force_sorted() {
+void Agent::compute_force_sorted(std::deque<Agent> agents) {
   cohesion = Zeros();
   alignment = Zeros();
   separation = Zeros();
-
+    //PB DE COHESION QUI DEVIENT NAN
   int count_c = 0 , count_s = 0 , count_a = 0 ;
-  //std::cout << neighbors.size() << "\n";
+  
   for(size_t i = 0; i < neighbors.size(); i++) {
-    Real dist = (this->position - neighbors[i].position).norm();
+    Real dist = (this->position - agents.at(neighbors[i]).position).norm();
     if (dist < rs && dist > 0.){
-      separation += (this->position - neighbors[i].position).normalized()/dist;
+      separation += (this->position - agents.at(neighbors[i]).position).normalized()/dist;
       ++count_s;
     }
     if (dist < ra){
-      alignment += neighbors[i].velocity;
+      alignment += agents.at(neighbors[i]).velocity;
       ++count_a;
     }
     if (dist < rc){
-      cohesion += neighbors[i].position;
+      cohesion += agents.at(neighbors[i]).position;
+
       ++count_c;
     }
   }
-
   // Compute separation contribution
   if (count_s > 0){
     separation.normalize();
@@ -125,8 +125,20 @@ void Agent::compute_force_sorted() {
 
     // Direction of displacement
     cohesion -= position;
+    
 
-    cohesion.normalize();
+    if (cohesion[0] == 0 && cohesion[1] == 0 && cohesion[2] == 0 ){
+      
+    }
+    else{
+    //NORMALISATION DE COHESION ENTRAINE UN NAN
+      cohesion.normalize();
+    }
+
+     if (isnan(cohesion[0])){
+       std::cout << "passage" << std::endl;
+     }
+
     cohesion *= max_speed;
     cohesion -= velocity;
     if (cohesion.norm() > max_force){

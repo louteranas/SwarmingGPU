@@ -1,6 +1,6 @@
 #ifndef AGENT_HXX
 #define AGENT_HXX
-
+#include <deque>
 #include "types.hxx"
 #include "vector.hxx"
 
@@ -13,7 +13,7 @@ typedef enum {
 
 class Agent{
   public :
-    std::deque<Agent> neighbors;
+    std::deque<int> neighbors;
 
     Vector position;
     Vector velocity;
@@ -34,7 +34,7 @@ class Agent{
     void compute_force(Container &agent_list, size_t index, double dist);
 
     //Paramètres : liste de voisinage, index du point considéré, (sideCount // 2) rayon du voisinage
-    void compute_force_sorted();
+    void compute_force_sorted(std::deque<Agent> agents);
 
     size_t find_closest(Container &agent_list, size_t index);
 };

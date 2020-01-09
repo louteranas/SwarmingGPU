@@ -14,7 +14,7 @@ protected:
   voxelsContainer sortedAgents;
   unsigned int na;
   //A initialiser
-  unsigned int sideCount = 3;
+  unsigned int sideCount = 5;
 
   Real dt;
   int time;
@@ -44,7 +44,6 @@ protected:
   void sortAgentsByX();
   void sortAgentsByY();
   void sortAgentsByZ();
-  void updateAgentsDeque();
   void getNeighborhood(uint index);
 
 public:

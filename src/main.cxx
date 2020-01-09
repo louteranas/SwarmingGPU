@@ -28,7 +28,6 @@ int main(int argc, char **argv) {
 
   // Create workspace
   Workspace workspace(parser);
-
   // Launch simulation
   int nSteps = parser("steps").asInt();
   workspace.simulate(nSteps);

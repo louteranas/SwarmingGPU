@@ -23,9 +23,9 @@ Workspace::Workspace(ArgumentParser &parser)
   dt= 0.01;
   max_speed = 20.0;
   max_force = 80.0;
-  time = 0.,
-
+  time = 0.;
   this->init();
+  
   this->sortAgents();}
 
 Workspace::Workspace(size_t nAgents,
@@ -35,7 +35,7 @@ Workspace::Workspace(size_t nAgents,
              wCohesion(wc), wAlignment(wa), wSeparation(ws),
              rCohesion(rc), rAlignment(ra), rSeparation(rs),
              max_speed(20.), max_force(80.)
-{ this->init();
+{   this->init();
   this->sortAgents();}
 
 void Workspace::init(){
@@ -46,16 +46,13 @@ void Workspace::init(){
   padding = 0.02 * lx;
   // Random generator seed
   srand48(std::time(0));
-
   // Initialize agents
   // This loop may be quite expensive due to random number generation
   for(size_t j = 0; j < na; j++){
-
     // Create random position
     //Vector position(lx*(0.02 + drand48()), ly*(0.02 + drand48()), lz*(0.02 + drand48()));
     Vector position(lx*(0.02 + drand48()), ly*(0.02 + drand48()), lz*(0.02 + drand48()));
     Vector velocity(160 * (drand48() - 0.5), 160*(drand48()- 0.5), 160*(drand48() - 0.5));
-
     // Create random velocity
     agents.push_back(Agent(position, velocity, Zeros()));
     agents.back().max_force = max_force;
@@ -65,7 +62,7 @@ void Workspace::init(){
     agents.back().rs = rSeparation;
 
     // std::cout << position.x << std::endl;
-
+ 
   }
 }
 
@@ -169,24 +166,22 @@ void Workspace::sortAgentsByZ(){
 
 
 void Workspace::sortAgents(){
+
   // we first sort by X to create YZ planes
   this->sortAgentsByX();
   // we then sort by Y to create lines
   this->sortAgentsByY();
   // we finally sort by Z to create voxels
   this->sortAgentsByZ();
-
-
   for (uint i = 0; i < agents.size(); i++){
     getNeighborhood(i);
   }
+
 }
 
 void Workspace::getNeighborhood(uint index){
-
-  agents.at(index).neighbors.clear();
-
-  unsigned int radius = sideCount/2;
+  //agents.at(index).neighbors.clear();
+  int radius = sideCount/2;
   // std::cout << sideCount << " is bigger than " << pow(na, 1.0/3.0) << " ? " << std::endl;
   // std::cout << ( pow(sideCount,3) > na) << " ? " << std::endl;
   // std::cout << ( sideCount > pow(na, 1.0/3.0)) << " ? " << std::endl;
@@ -197,35 +192,37 @@ void Workspace::getNeighborhood(uint index){
   }
   int cote = pow(na, 1./3.);
   int currentZ = index % cote;
-  index = index / cote;
-  int currentY = index % cote;
-  index = index / cote;
-  int currentX = index % cote; 
-  
-
-  for (int z = - radius; z <(int) radius + 1; z++){
-    for (int y = - radius; y < (int) radius + 1; y++){
-      for (int x = - radius; x < (int)radius + 1; x++){
-        if (x != 0 && y != 0 && z != 0){
-            agents.at(index).neighbors.push_back(agents.at(((( currentX + x) * cote * cote) + ((currentY + y)  * cote) + ( currentZ + z)) % na));
+  int tempIndex = index / cote;
+  int currentY = tempIndex % cote;
+  tempIndex = tempIndex / cote;
+  int currentX = tempIndex % cote; 
+  int i = 0;
+  if (agents.at(index).neighbors.size() > 0){
+    for (int z = - radius; z <(int) radius + 1; z++){
+      for (int y = - radius; y < (int) radius + 1; y++){
+        for (int x = - radius; x < (int)radius + 1; x++){
+          if (x != 0 || y != 0 || z != 0){
+          agents.at(index).neighbors.at(i) = (( currentX + x) * cote * cote
+           + (currentY + y)  * cote + ( currentZ + z)) % na;
+          }
+        }
+      }
+    }
+  }
+  else{
+    for (int z = - radius; z <(int) radius + 1; z++){
+      for (int y = - radius; y < (int) radius + 1; y++){
+        for (int x = - radius; x < (int)radius + 1; x++){
+          if (x != 0 || y != 0 || z != 0){
+            agents.at(index).neighbors.push_back((( currentX + x) * cote * cote
+              + (currentY + y)  * cote + ( currentZ + z) )% na);
+          }
         }
       }
     }
   }
 
-  //std::cout << "la taille des voisins est " << neighbors.size()<<std::endl;
-}
-
-void Workspace::updateAgentsDeque(){
-  std::deque<Agent> NewAgents;
-  for(size_t i = 0; i < sortedAgents.size(); i++){
-    for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
-      for(size_t k = 0; k < sortedAgents.at(i).at(j).size(); k++){
-        NewAgents.push_back(sortedAgents.at(i).at(j).at(k));
-      }
-    }
-  }
-  agents = NewAgents;
+  //std::cout << "la taille des voisins est " << agents.at(index).neighbors.size()<<std::endl;
 }
 
 void Workspace::move()
@@ -233,13 +230,13 @@ void Workspace::move()
 
     // Compute forces applied on specific agent
     for(size_t k = 0; k< na; k++){
-
-      agents[k].compute_force_sorted();
+      agents[k].compute_force_sorted(agents);
 
 
       agents[k].direction = agents[k].cohesion*wCohesion
         + agents[k].alignment*wAlignment
         + agents[k].separation*wSeparation;
+
     }
 
 
