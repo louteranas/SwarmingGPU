@@ -279,17 +279,17 @@ void Workspace::simulate(int nsteps) {
     
     while (step++ < nsteps){
       this->move();
-      // if (step % 100 == 0){
-      //   this->sortAgents();
-      // }
+       if (step % 100 == 0){
+         this->sortAgents();
+         std::cout << step << std::endl;
+       }
       if (step % 20 == 0){
-        std::cout << step << std::endl;
-        this->sortAgents();
+        //this->sortAgents();
         save(step);
       }
-      if (step %1000 == 0){
-        std::cout << step << std::endl;
-      }
+      //if (step %100 == 0){
+      //  std::cout << step << std::endl;
+     // }
 
 
     }
