@@ -44,6 +44,7 @@ protected:
   void sortAgentsByX();
   void sortAgentsByY();
   void sortAgentsByZ();
+  void mergeLists(unsigned int startIndex1, unsigned int size1, unsigned int startIndex2, unsigned int size2, unsigned int coord);
   void getNeighborhood(uint index);
 
 public:
@@ -52,7 +53,6 @@ public:
   Workspace(size_t nAgents,
   Real wc, Real wa, Real ws,
   Real rc, Real ra, Real rs);
-
   void move();
   void simulate(int nsteps);
   void save(int stepid);

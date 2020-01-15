@@ -79,6 +79,22 @@ void sortList(std::deque<Agent> &unsortedAgents, unsigned int coord, unsigned in
   }
 }
 
+void Workspace::mergeLists(unsigned int startIndex1, unsigned int size1, unsigned int startIndex2, unsigned int size2, unsigned int coord){
+  uint index1 = startIndex1;
+  uint index2 = startIndex2;
+  while(index1 < startIndex1 + size1 && index2 < startIndex2 + size2){
+    if(agents.at(index1).position[coord] > agents.at(index2).position[coord]){
+      Agent temp = agents.at(index1);
+      agents.at(index1) = agents.at(index2);
+      agents.at(index2) = temp;
+      index1++;
+    }
+    else{
+      index2++;
+    }
+  }
+}
+
 std::deque<Agent> createDeque(unsigned int startIndex, unsigned int endIndex){
   std::deque<Agent> output;
   /*for(size_t i = 0; i < agentsPlan.size(); i++){
