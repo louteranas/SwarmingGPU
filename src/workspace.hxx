@@ -4,10 +4,10 @@
 #define  WORKSPACE
 
 
-#include "cl.hpp"
-#include "util.hpp"
-#include "device_picker.hpp"
 
+
+#include "vector.hxx"
+#include "agent.hxx"
 #include "parser.hxx"
 #include "types.hxx"
 

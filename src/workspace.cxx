@@ -6,8 +6,11 @@
 
 
 
-#include "agent.hxx"
-#include "vector.hxx"
+#include "cl.hpp"
+#include "util.hpp"
+#include "device_picker.hpp"
+#include "err_code.h"
+
 #include "workspace.hxx"
 
 
@@ -170,7 +173,8 @@ void Workspace::sortAgentsByZ(){
 
 
 void Workspace::sortAgents(){
-
+  sortAgentsGpu();
+  /*
   // we first sort by X to create YZ planes
   this->sortAgentsByX();
   // we then sort by Y to create lines
@@ -180,7 +184,7 @@ void Workspace::sortAgents(){
   for (uint i = 0; i < agents.size(); i++){
     getNeighborhood(i);
   }
-
+  */
 }
 
 

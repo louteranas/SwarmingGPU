@@ -7,8 +7,6 @@ project(LabOpenCL CXX)
 # Ajoute les options spécifiques pour l'ensimag
 set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations -std=c++0x")
 
-
-
 # Ajoute les dépendences sur la bibliothèque OPENCL
 set(LIBS ${LIBS} ${OpenCL_LIBRARY})
 include_directories(${OpenCL_INCLUDE_DIR})
