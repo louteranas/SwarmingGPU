@@ -3,6 +3,11 @@
 #ifndef  WORKSPACE
 #define  WORKSPACE
 
+
+#include "cl.hpp"
+#include "util.hpp"
+#include "device_picker.hpp"
+
 #include "parser.hxx"
 #include "types.hxx"
 

@@ -1,5 +1,5 @@
 #include "agent.hxx"
-#include "workspace.hxx"
+
 
 
 Agent::Agent(const Vector &pos, const Vector &vel, const Vector &dir){

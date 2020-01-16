@@ -4,7 +4,7 @@
 #include <ctime>
 #include <math.h>
 
-#include "util.hpp"
+
 
 #include "agent.hxx"
 #include "vector.hxx"
@@ -189,9 +189,17 @@ void Workspace::sortAgentsGpu(){
 
 
   // chosing GPU device 
-  // cl_uint deviceIndex = 0;
+  cl_uint deviceIndex = 0;
   // Get list of devices
-  // std::vector<cl::Device> devices;
+  // Get list of devices
+  std::vector<cl::Device> devices;
+  unsigned numDevices = getDeviceList(devices);
+
+  cl::Device device = devices[deviceIndex];
+
+  std::string name;
+  getDeviceName(device, name);
+  std::cout << "\nUsing OpenCL device: " << name << "\n";
 
 
 
