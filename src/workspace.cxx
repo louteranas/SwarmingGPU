@@ -26,7 +26,8 @@ Workspace::Workspace(ArgumentParser &parser)
   time = 0.;
   this->init();
   
-  this->sortAgents();}
+  this->sortAgents();
+  this->convertAgents();}
 
 Workspace::Workspace(size_t nAgents,
              Real wc, Real wa, Real ws,
@@ -93,6 +94,20 @@ void Workspace::mergeLists(unsigned int startIndex1, unsigned int size1, unsigne
       index2++;
     }
   }
+}
+
+gpuContainer Workspace::convertAgents(){
+  std::vector<float> temp;
+  gpuContainer gpuAgents;
+  for(uint i = 0; i<agents.size(); i++){
+    temp.push_back(agents.at(i).position[0]);
+    temp.push_back(agents.at(i).position[1]);
+    temp.push_back(agents.at(i).position[2]);
+    temp.push_back((float)i);
+    gpuAgents.push_back(temp);
+    temp.clear();
+  }
+  return gpuAgents;
 }
 
 std::deque<Agent> createDeque(unsigned int startIndex, unsigned int endIndex){
@@ -163,6 +178,11 @@ void Workspace::sortAgents(){
     getNeighborhood(i);
   }
 
+}
+
+
+void Workspace::sortAgentsGpu(){
+  
 }
 
 void Workspace::getNeighborhood(uint index){
