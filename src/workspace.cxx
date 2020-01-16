@@ -3,7 +3,9 @@
 #include <fstream>
 #include <ctime>
 #include <math.h>
-
+#include "../Common/util.hpp"
+#include "../Common/cl.hpp"
+#include "../Common/device_picker.hpp"
 #include "agent.hxx"
 #include "vector.hxx"
 #include "workspace.hxx"
@@ -182,7 +184,21 @@ void Workspace::sortAgents(){
 
 
 void Workspace::sortAgentsGpu(){
-  
+  // chosing GPU device 
+  cl_uint deviceIndex = 0;
+  // Get list of devices
+  std::vector<cl::Device> devices;
+  getDeviceList(devices);
+
+  cl::Device device = devices[deviceIndex];
+  std::vector<cl::Device> chosen_device;
+  chosen_device.push_back(device);
+
+  // Load in kernel source, creating a program object for the context
+  cl::Context context(chosen_device);
+  cl::CommandQueue queue(context, device);
+  cl::Program program(context, util::loadProgram("bubble_sort.cl"), true);
+
 }
 
 void Workspace::getNeighborhood(uint index){
