@@ -117,13 +117,6 @@ void Workspace::sortAgentsByX(){
   // Sorting agents by X value
   sortList(agents, 0, 0, agents.size());
 
-  // for debug
-  // for(size_t i = 0; i < sortedAgents.size(); i++){
-  //   for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
-  //     printDeque(sortedAgents.at(i).at(j), 0);
-  //   }
-  // }
-
 }
 
 void Workspace::sortAgentsByY(){
@@ -135,16 +128,6 @@ void Workspace::sortAgentsByY(){
   for(unsigned int i = 0; i < numberOfIterations; i++){
     sortList(agents, 1, i * numberOfPlanAgents, (i+1) * numberOfPlanAgents);
   }
-
-
-
-  // for debug
-  // for(size_t i = 0; i < sortedAgents.size(); i++){
-  //     std::cout << "Here is the plan "<< i << std::endl;
-  //   for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
-  //     printDeque(sortedAgents.at(i).at(j), 1);
-  //   }
-  // }
 
 }
 
@@ -164,19 +147,6 @@ void Workspace::sortAgentsByZ(){
     }
   }
 
-/*
-  if(!wrongCase)
-    std::cout << "Sorting is wrong." << std::endl; 
-*/
-
-  // for debug
-  // for(size_t i = 0; i < sortedAgents.size(); i++){
-  //     std::cout << "Here is the plan X "<< i << std::endl;
-  //   for(size_t j = 0; j < sortedAgents.at(i).size(); j++){
-  //     std::cout << "Here is the line Y "<< j << std::endl;
-  //     printDeque(sortedAgents.at(i).at(j), 2);
-  //   }
-  // }
 
 }
 
