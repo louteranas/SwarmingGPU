@@ -4,14 +4,12 @@
 #include <ctime>
 #include <math.h>
 
-#include "../Common/oclhelper.h"
-#include "../Common/cl.hpp"
-#include "../Common/oclerror.h"
-#include "../Common/ocltimer.h"
+#include "util.hpp"
 
 #include "agent.hxx"
 #include "vector.hxx"
 #include "workspace.hxx"
+
 
 Workspace::Workspace(ArgumentParser &parser)
 {
@@ -186,23 +184,27 @@ void Workspace::sortAgents(){
 }
 
 
-// void Workspace::sortAgentsGpu(){
-//   // chosing GPU device 
-//   cl_uint deviceIndex = 0;
-//   // Get list of devices
-//   std::vector<cl::Device> devices;
-//   getDeviceList(devices);
+void Workspace::sortAgentsGpu(){
 
-//   cl::Device device = devices[deviceIndex];
-//   std::vector<cl::Device> chosen_device;
-//   chosen_device.push_back(device);
 
-//   // Load in kernel source, creating a program object for the context
-//   cl::Context context(chosen_device);
-//   cl::CommandQueue queue(context, device);
-//   cl::Program program(context, util::loadProgram("bubble_sort.cl"), true);
 
-// }
+  // chosing GPU device 
+  // cl_uint deviceIndex = 0;
+  // Get list of devices
+  // std::vector<cl::Device> devices;
+
+
+
+  // cl::Device device = test.getDevice();
+  // std::vector<cl::Device> chosen_device;
+  // chosen_device.push_back(device);
+/*
+  // Load in kernel source, creating a program object for the context
+  cl::Context context(chosen_device);
+  cl::CommandQueue queue(context, device);
+  cl::Program program(context, util::loadProgram("bubble_sort.cl"), true);
+*/
+}
 
 void Workspace::getNeighborhood(uint index){
   //agents.at(index).neighbors.clear();

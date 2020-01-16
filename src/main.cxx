@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 
   // Parse command line arguments
   parser.setOptions(argc, argv);
-
+  
   // Create workspace
   Workspace workspace(parser);
   // Launch simulation
