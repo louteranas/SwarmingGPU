@@ -173,8 +173,7 @@ void Workspace::sortAgentsByZ(){
 
 
 void Workspace::sortAgents(){
-  sortAgentsGpu();
-  /*
+    /*
   // we first sort by X to create YZ planes
   this->sortAgentsByX();
   // we then sort by Y to create lines
@@ -188,9 +187,21 @@ void Workspace::sortAgents(){
 }
 
 
+
+
+
 void Workspace::sortAgentsGpu(){
+  
 
+  int groupSize = 16;
 
+  gpuContainer h_a = convertAgents();
+
+  for (int j = 0; j < h_a.size(); j++){
+    std::cout << h_a[j][0] << " ";
+  }
+  std::cout << "\n";
+  cl::Buffer d_a;
 
   // chosing GPU device 
   cl_uint deviceIndex = 0;
@@ -205,18 +216,42 @@ void Workspace::sortAgentsGpu(){
   getDeviceName(device, name);
   std::cout << "\nUsing OpenCL device: " << name << "\n";
 
+  std::vector<cl::Device> chosen_device;
+  chosen_device.push_back(device);
 
 
-  // cl::Device device = test.getDevice();
-  // std::vector<cl::Device> chosen_device;
-  // chosen_device.push_back(device);
-/*
+
   // Load in kernel source, creating a program object for the context
   cl::Context context(chosen_device);
   cl::CommandQueue queue(context, device);
   cl::Program program(context, util::loadProgram("bubble_sort.cl"), true);
-*/
+
+  d_a = cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(float) * 4 * agents.size());
+  cl::Kernel kernel_sort = cl::Kernel(program, "sortList");
+  kernel_sort.setArg(0, d_a);
+  kernel_sort.setArg(1, agents.size());
+  kernel_sort.setArg(2, 0);
+
+  cl::NDRange global(agents.size());
+  cl::NDRange local(groupSize);
+
+  queue.enqueueNDRangeKernel(kernel_sort, cl::NullRange, global, local);
+  queue.finish();
+
+  cl::copy(queue, d_a, h_a.begin(), h_a.end());
+
+  for (int j = 0; j < h_a.size(); j++){
+    std::cout << h_a[j][0] << " ";
+  }
+
+
 }
+
+
+
+
+
+
 
 void Workspace::getNeighborhood(uint index){
   //agents.at(index).neighbors.clear();
@@ -310,6 +345,8 @@ void Workspace::move()
 void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
+    sortAgentsGpu();
+/*
     // perform nsteps time steps of the simulation
     int step = 0;
     std::cout << " starting the mouvement " << std::endl;
@@ -332,7 +369,7 @@ void Workspace::simulate(int nsteps) {
 
 
     }
-    
+    */
 }
 
 void Workspace::save(int stepid) {
@@ -348,15 +385,4 @@ void Workspace::save(int stepid) {
 
     myfile.close();
 
-  // visual debgging
-
-  // updateAgentsDeque();
-  // myfile2.open("boidsModified.xyz", stepid==0 ? std::ios::out : std::ios::app);
-
-  //   myfile2 << std::endl;
-  //   myfile2 << pow(na, 1.0/3.0) << std::endl;
-  //   for (size_t p=0; p<pow(na, 1.0/3.0)/*na*/; p++)
-  //       myfile2 << "B " << agents[p].position;
-
-  //   myfile2.close();
 }
