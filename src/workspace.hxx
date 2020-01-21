@@ -50,7 +50,7 @@ protected:
   void sortAgentsByX();
   void sortAgentsByY();
   void sortAgentsByZ();
-  gpuContainer convertAgents();
+  gpuContainer convertAgents(int index);
   void mergeLists(unsigned int startIndex1, unsigned int size1, unsigned int startIndex2, unsigned int size2, unsigned int coord);
   void getNeighborhood(uint index);
 

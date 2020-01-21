@@ -33,7 +33,7 @@ Workspace::Workspace(ArgumentParser &parser)
   this->init();
   
   this->sortAgents();
-  this->convertAgents();}
+}
 
 Workspace::Workspace(size_t nAgents,
              Real wc, Real wa, Real ws,
@@ -102,16 +102,17 @@ void Workspace::mergeLists(unsigned int startIndex1, unsigned int size1, unsigne
   }
 }
 
-gpuContainer Workspace::convertAgents(){
-  std::vector<float> temp;
+//Rajouter un vecteur après qui contiendra tous les index
+gpuContainer Workspace::convertAgents(int index){
+  // std::vector<float> temp;
   gpuContainer gpuAgents;
   for(uint i = 0; i<agents.size(); i++){
-    temp.push_back(agents.at(i).position[0]);
-    temp.push_back(agents.at(i).position[1]);
-    temp.push_back(agents.at(i).position[2]);
-    temp.push_back((float)i);
-    gpuAgents.push_back(temp);
-    temp.clear();
+    gpuAgents.push_back(agents.at(i).position[index]);
+    // temp.push_back(agents.at(i).position[1]);
+    // temp.push_back(agents.at(i).position[2]);
+    // temp.push_back((float)i);
+    // gpuAgents.push_back(temp);
+    // temp.clear();
   }
   return gpuAgents;
 }
@@ -191,59 +192,57 @@ void Workspace::sortAgents(){
 
 
 void Workspace::sortAgentsGpu(){
-  
-
   int groupSize = 16;
-
-  gpuContainer h_a = convertAgents();
-
-  for (int j = 0; j < h_a.size(); j++){
-    std::cout << h_a[j][0] << " ";
+ 
+  //Initialisation des listes
+  std::vector<float> h_X = convertAgents(0);
+    //Initialisation de la liste d'index  
+  std::vector<int> listIndex;
+  for (int j = 0; j < h_X.size(); j++){
+    listIndex.push_back(j);
+  }
+  for (int j = 0; j < h_X.size(); j++){
+    std::cout << h_X[j] << " ";
   }
   std::cout << "\n";
-  cl::Buffer d_a;
+  
+
+  cl::Buffer d_X;
+  cl::Buffer d_index;
 
   // chosing GPU device 
   cl_uint deviceIndex = 0;
-  // Get list of devices
-  // Get list of devices
-  std::vector<cl::Device> devices;
+  std::vector<cl::Device> devices; 
   unsigned numDevices = getDeviceList(devices);
-
   cl::Device device = devices[deviceIndex];
-
   std::string name;
   getDeviceName(device, name);
   std::cout << "\nUsing OpenCL device: " << name << "\n";
-
   std::vector<cl::Device> chosen_device;
   chosen_device.push_back(device);
-
 
 
   // Load in kernel source, creating a program object for the context
   cl::Context context(chosen_device);
   cl::CommandQueue queue(context, device);
   cl::Program program(context, util::loadProgram("bubble_sort.cl"), true);
-
-  d_a = cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(float) * 4 * agents.size());
+  d_X = cl::Buffer(context, h_X.begin(), h_X.end(), CL_MEM_READ_WRITE, true);
+  d_index = cl::Buffer(context, listIndex.begin(), listIndex.end(), CL_MEM_READ_WRITE, true);
   cl::Kernel kernel_sort = cl::Kernel(program, "sortList");
-  kernel_sort.setArg(0, d_a);
-  kernel_sort.setArg(1, agents.size());
-  kernel_sort.setArg(2, 0);
+  kernel_sort.setArg(0, d_X);
+  kernel_sort.setArg(1, d_index);
+  kernel_sort.setArg(2, agents.size());
 
   cl::NDRange global(agents.size());
   cl::NDRange local(groupSize);
 
   queue.enqueueNDRangeKernel(kernel_sort, cl::NullRange, global, local);
   queue.finish();
-
-  cl::copy(queue, d_a, h_a.begin(), h_a.end());
-
-  for (int j = 0; j < h_a.size(); j++){
-    std::cout << h_a[j][0] << " ";
+  cl::copy(queue, d_X, h_X.begin(), h_X.end());
+  for (int j = 0; j < h_X.size(); j++){
+    std::cout << h_X[j] << " ";
   }
-
+  std::cout << std::endl;
 
 }
 
