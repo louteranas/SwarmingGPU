@@ -7,6 +7,13 @@ project(LabOpenCL CXX)
 # Ajoute les options spécifiques pour l'ensimag
 set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations -std=c++0x")
 
+# Recherche le package OpenCL
+find_package(OpenCL REQUIRED)
+if(NOT OPENCL_HAS_CXX)
+  message(WARNING "C++ bindings not found.  Using Kronos supplied reference OpenCL v1.2 C++ bindings.")
+  list(APPEND OpenCL_INCLUDE_DIRS Common)
+endif()
+
 # Ajoute les dépendences sur la bibliothèque OPENCL
 set(LIBS ${LIBS} ${OpenCL_LIBRARY})
 include_directories(${OpenCL_INCLUDE_DIR})

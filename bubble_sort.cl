@@ -1,16 +1,17 @@
 __kernel void sortList(
     __global float* agentsIndex, // quadruplet (x, y, z, indexDansListeInit)
-    __global int* indexList,
+    __global float* indexList,
     const int agentSize)
 { 
 
     // _local bool notSorted = True;
-    // uint wid = get_group_id(0);
-    // uint lid = get_local_id(0);
+     uint wid = get_group_id(0);
+  //uint lid = get_local_id(0);
     // uint gs = 16;
     uint gid = get_global_id(0);//wid * gs + lid;
 
-    agentsIndex[gid] = 0;
+    agentsIndex[0] = 12;
+    indexList[lid] = 12;
 
     //Trier pour chaque sous groupe
     // while(notSorted){
@@ -32,10 +33,10 @@ __kernel void sortList(
     //         if (gid + 1 < ((wid + 1) * gs ) && (gid +1 < agentSize) && agentsIndex[gid] < agentsIndex[gid + 1]){
     //             //Swap de agent
     //             float temp = agentsIndex[gid];
-    //             agentsIndex[gid] = agentsIndex[gid + 1];
+    //             agentsIndex[gid] = agentsIndex gid + 1];
     //             agentsIndex[gid + 1] = temp;
     //             //Swap de index
-    //             int tempIndex = indexList[gid];
+    //             int tempIndex = indexList[gid] 
     //             indexList[gid] = indexList[gid + 1];
     //             indexList[gid + 1] = temp; 
     //             notSorted = True;
