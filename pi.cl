@@ -20,8 +20,7 @@ __kernel void createList(
    uint lid = get_local_id(0);
    uint gs = 16;
    uint gid = get_global_id(0);//wid * gs + lid;
-  a[gid] = 12;
-  r[gid] = 12;
+  r[gid] = a[gid];
   // float x = (gid - 0.5) * step;
   // a[gid] = 4.0 / (1. + x * x);
   // b[lid] = a[gid];

@@ -11,7 +11,7 @@ __kernel void sortList(
     uint gid = get_global_id(0);//wid * gs + lid;
 
     agentsIndex[0] = 12;
-    indexList[lid] = 12;
+    indexList[gid] = 12;
 
     //Trier pour chaque sous groupe
     // while(notSorted){
@@ -49,37 +49,3 @@ __kernel void sortList(
     // barrier(CLK_LOCAL_MEM_FENCE);
 }
 
-
-__kernel void mergeList(
-    __global float** agents,
-    const uint agentSize,
-    const uint groupeSize,
-    const uint index)
-{
-    uint wid = get_group_id(0);
-    uint lid = get_local_id(0);
-    uint gid = get_global_id(0);
-    
-    uint firstIndex = 0;
-    uint secondIndex = groupeSize/2;
-
-    while( firstIndex < groupeSize/2 && secondIndex < groupeSize){
-        if(agents[wid*groupeSize + firstIndex][index] > agents[wid*groupeSize + secondIndex][index]){
-            for (int i = 0; i < 4; i++){
-                float temp = agents[wid*groupeSize + firstIndex][i];
-                agents[wid*groupeSize + firstIndex][i] = agents[wid*groupeSize + secondIndex][i];
-                agents[wid*groupeSize + secondIndex][i] = temp;
-            }
-            firstIndex++;
-        }
-        else{
-            secondIndex++;
-        }
-
-    }
-
-
-
-
-
-}

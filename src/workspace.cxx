@@ -225,29 +225,29 @@ void Workspace::sortAgentsGpu(){
   // Load in kernel source, creating a program object for the context
   cl::Context context(chosen_device);
   cl::CommandQueue queue(context, device);
-  // cl::Program program(context, util::loadProgram("bubble_sort.cl"), true);
-  cl::Program program(context, util::loadProgram("pi.cl"), true);
+  cl::Program program(context, util::loadProgram("bubble_sort.cl"), true);
+  // cl::Program program(context, util::loadProgram("pi.cl"), true);
 
-  // d_X = cl::Buffer(context, h_X.begin(), h_X.end(), CL_MEM_READ_WRITE, true);
-    d_X = cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(float) * agents.size());
-    d_index = cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(float) * agents.size());
+   d_X = cl::Buffer(context, h_X.begin(), h_X.end(), CL_MEM_READ_WRITE, true);
 
-  // d_index = cl::Buffer(context, listIndex.begin(), listIndex.end(), CL_MEM_READ_WRITE, true);
+   d_index = cl::Buffer(context, listIndex.begin(), listIndex.end(), CL_MEM_READ_WRITE, true);
   
-  // cl::Kernel kernel_sort = cl::Kernel(program, "sortList");
-  cl::Kernel kernel_sort = cl::Kernel(program, "createList");
+  cl::Kernel kernel_sort = cl::Kernel(program, "sortList");
+  // cl::Kernel kernel_sort = cl::Kernel(program, "createList");
   kernel_sort.setArg(0, d_X);
   kernel_sort.setArg(1, d_index);
-  // kernel_sort.setArg(2, agents.size());
-  const double salut =  3;
-  kernel_sort.setArg(2, salut);
+  const int truc = agents.size();
+  //Mettre truc à la place de agents.size() et enlever la deuxième fonction et c'est ok
+  kernel_sort.setArg(2,agents.size());
+  // const double salut =  3;
+  // kernel_sort.setArg(2, salut);
   
   cl::NDRange global(agents.size());
   cl::NDRange local(1);
 
   queue.enqueueNDRangeKernel(kernel_sort, cl::NullRange, global, local);
   queue.finish();
-  cl::copy(d_X, h_X.begin(), h_X.end());
+  cl::copy(queue, d_X, h_X.begin(), h_X.end());
 
   // cl::copy(d_index, listIndex.begin(), listIndex.end());
   std::vector<float> test(h_X.size());
