@@ -191,8 +191,7 @@ void Workspace::sortAgents(){
 
 
 
-void Workspace::sortAgentsGpu(){
-  int groupSize = 16;
+void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
  
   //Initialisation des listes
   std::vector<float> h_X = convertAgents(0);
@@ -238,12 +237,12 @@ void Workspace::sortAgentsGpu(){
   kernel_sort.setArg(1, d_index);
   const int truc = agents.size();
   //Mettre truc à la place de agents.size() et enlever la deuxième fonction et c'est ok
-  kernel_sort.setArg(2,agents.size());
-  // const double salut =  3;
-  // kernel_sort.setArg(2, salut);
+  // kernel_sort.setArg(2,agents.size());
+  kernel_sort.setArg(2, agentsSize);
+  kernel_sort.setArg(3, groupeSize);
   
-  cl::NDRange global(agents.size());
-  cl::NDRange local(1);
+  cl::NDRange global(agentsSize);
+  cl::NDRange local(groupeSize);
 
   queue.enqueueNDRangeKernel(kernel_sort, cl::NullRange, global, local);
   queue.finish();
@@ -251,11 +250,14 @@ void Workspace::sortAgentsGpu(){
 
   // cl::copy(d_index, listIndex.begin(), listIndex.end());
   std::vector<float> test(h_X.size());
-  cl::copy(queue, d_index, test.begin(), test.end());
+  cl::copy(queue, d_X, test.begin(), test.end());
 
-
+  std::cout << "printing test content" << std::endl;
   for (int j = 0; j < h_X.size(); j++){
-    std::cout <<  test[j]<<" ";
+    h_X[j] = test[j];
+  }
+  for (int j = 0; j < h_X.size(); j++){
+    std::cout <<  h_X[j]<<" ";
   }
   std::cout << std::endl;
 
@@ -359,7 +361,8 @@ void Workspace::move()
 void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
-    sortAgentsGpu();
+    sortAgentsGpu((uint) agents.size(), 3);
+    // sortAgentsGpu((uint) agents.size(), 6);
 /*
     // perform nsteps time steps of the simulation
     int step = 0;

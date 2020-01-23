@@ -46,7 +46,7 @@ protected:
   Real domainsize;
   void init();
   void sortAgents();
-  void sortAgentsGpu();
+  void sortAgentsGpu(uint agentsSize, int groupeSize);
   void sortAgentsByX();
   void sortAgentsByY();
   void sortAgentsByZ();
