@@ -1,4 +1,4 @@
-# Install script for directory: /user/0/.base/loutera/home/Documents/3a/SwarmingGPU
+# Install script for directory: /user/4/.base/reistt/home/GPU/SwarmingGPU
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/user/0/.base/loutera/home/Documents/3a/SwarmingGPU/build/src/cmake_install.cmake")
+  include("/user/4/.base/reistt/home/GPU/SwarmingGPU/build/src/cmake_install.cmake")
 
 endif()
 
@@ -51,5 +51,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/user/0/.base/loutera/home/Documents/3a/SwarmingGPU/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/user/4/.base/reistt/home/GPU/SwarmingGPU/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

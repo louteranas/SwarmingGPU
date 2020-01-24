@@ -1,4 +1,4 @@
-# Install script for directory: /user/0/.base/loutera/home/Documents/3a/SwarmingGPU/src
+# Install script for directory: /user/4/.base/reistt/home/GPU/SwarmingGPU/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

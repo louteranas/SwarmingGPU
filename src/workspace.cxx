@@ -189,27 +189,8 @@ void Workspace::sortAgents(){
 
 
 
-
-
 void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
- 
-  //Initialisation des listes
-  std::vector<float> h_X = convertAgents(0);
-    //Initialisation de la liste d'index  
-  std::vector<float> listIndex;
-  for (int j = 0; j < h_X.size(); j++){
-    listIndex.push_back(j);
-  }
-  for (int j = 0; j < h_X.size(); j++){
-    std::cout << h_X[j] << " ";
-  }
-  std::cout << "\n";
-  
-
-  cl::Buffer d_X;
-  cl::Buffer d_index;
-
-  // chosing GPU device 
+  // Choosing GPU device
   cl_uint deviceIndex = 0;
   std::vector<cl::Device> devices; 
   unsigned numDevices = getDeviceList(devices);
@@ -221,45 +202,75 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
   chosen_device.push_back(device);
 
 
+  //Init param
+
+  //Initialisation des listes
+  std::vector<float> agentsX = convertAgents(0);
+  //Initialisation de la liste d'index  
+  std::vector<float> listIndex;
+  for (int j = 0; j < agentsX.size(); j++){
+    listIndex.push_back(j);
+  }
+
+  
+
+  //Create the globalGroup as a multiple of the workgroup
+  const int globalSize = (agentsSize / groupeSize) * groupeSize;
+  std::vector<float> h_X_rest(agentsX.begin() + globalSize, agentsX.end());
+  std::vector<float> h_X(agentsX.begin(), agentsX.begin() + globalSize);
+  
+  std::vector<float> h_index_rest(listIndex.begin() + globalSize, listIndex.end());
+  std::vector<float> h_index(listIndex.begin(), listIndex.begin() + globalSize);
+  //TODO bubble_sort of h_X_rest
+
+  cl::Buffer d_X;
+  cl::Buffer d_index;
+
   // Load in kernel source, creating a program object for the context
   cl::Context context(chosen_device);
   cl::CommandQueue queue(context, device);
+  //Kernel for sorting with a param
+
   cl::Program program(context, util::loadProgram("bubble_sort.cl"), true);
-  // cl::Program program(context, util::loadProgram("pi.cl"), true);
 
-   d_X = cl::Buffer(context, h_X.begin(), h_X.end(), CL_MEM_READ_WRITE, true);
-
-   d_index = cl::Buffer(context, listIndex.begin(), listIndex.end(), CL_MEM_READ_WRITE, true);
+  d_X = cl::Buffer(context, h_X.begin(), h_X.end(), CL_MEM_READ_WRITE, true);
+  d_index = cl::Buffer(context, h_index.begin(), h_index.end(), CL_MEM_READ_WRITE, true);
   
   cl::Kernel kernel_sort = cl::Kernel(program, "sortList");
-  // cl::Kernel kernel_sort = cl::Kernel(program, "createList");
   kernel_sort.setArg(0, d_X);
   kernel_sort.setArg(1, d_index);
-  const int truc = agents.size();
-  //Mettre truc à la place de agents.size() et enlever la deuxième fonction et c'est ok
-  // kernel_sort.setArg(2,agents.size());
-  kernel_sort.setArg(2, agentsSize);
+  kernel_sort.setArg(2, globalSize);
   kernel_sort.setArg(3, groupeSize);
   
-  cl::NDRange global(agentsSize);
+  cl::NDRange global(globalSize);
   cl::NDRange local(groupeSize);
 
   queue.enqueueNDRangeKernel(kernel_sort, cl::NullRange, global, local);
   queue.finish();
   cl::copy(queue, d_X, h_X.begin(), h_X.end());
-
-  // cl::copy(d_index, listIndex.begin(), listIndex.end());
-  std::vector<float> test(h_X.size());
-  cl::copy(queue, d_X, test.begin(), test.end());
+  cl::copy(queue, d_index, h_index.begin(), h_index.end());
 
   std::cout << "printing test content" << std::endl;
-  for (int j = 0; j < h_X.size(); j++){
-    h_X[j] = test[j];
-  }
+
   for (int j = 0; j < h_X.size(); j++){
     std::cout <<  h_X[j]<<" ";
   }
   std::cout << std::endl;
+
+  for (int j = 0; j < h_X.size(); j++){
+    std::cout <<  h_index[j]<<" ";
+  }
+  std::cout << std::endl;
+
+
+  //______________Kernel for merging the things__________
+  cl::Program programMerge(context, util::loadProgram("merging.cl"), true);
+  int tempSize = globalSize;
+  groupeSize *= 2;
+  //Notre cas d'arrêt
+  while ((tempSize / groupeSize) > 1){
+
+  }
 
 }
 
@@ -361,7 +372,7 @@ void Workspace::move()
 void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
-    sortAgentsGpu((uint) agents.size(), 3);
+    sortAgentsGpu((uint) agents.size(), 8);
     // sortAgentsGpu((uint) agents.size(), 6);
 /*
     // perform nsteps time steps of the simulation
