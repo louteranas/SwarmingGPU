@@ -483,7 +483,7 @@ void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
     std::vector<float> agentsProjection = convertAgents(0);
-    sortAgentsGpu(5, agentsProjection, 0, agentsProjection.size());
+    sortAgentsGpu(4, agentsProjection, 0, agentsProjection.size());
     // sortAgentsGpu((uint) agents.size(), 6);
 /*
     // perform nsteps time steps of the simulation
