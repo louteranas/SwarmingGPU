@@ -187,6 +187,39 @@ void Workspace::sortAgents(){
   */
 }
 
+void Workspace::mergeCPU(std::vector<float> &list1, std::vector<float> list2, std::vector<int> &index1, std::vector<int> index2){
+  std::vector<float> output;
+  std::vector<int> ouputIndex;
+  int iterator1 = 0;
+  int iterator2 = 0;
+  while(iterator1<list1.size() && iterator2 < list2.size()){
+    if(list1[iterator1] > list2[iterator2]){
+      output.push_back(list1[iterator1]);
+      ouputIndex.push_back(index1[iterator1]);
+      iterator1++;
+    }
+    else{
+      output.push_back(list2[iterator2]);
+      ouputIndex.push_back(index2[iterator2]);
+      iterator2++;
+    }
+  }
+  if(iterator1 < list1.size()){
+    for(int i = iterator1; i < list1.size(); i++){
+      output.push_back(list1[i]);
+      ouputIndex.push_back(index1[i]);
+    }
+  }
+  if(iterator2 < list2.size()){
+    for(int i = iterator2; i < list2.size(); i++){
+      ouputIndex.push_back(index2[i]);
+    }
+  }
+  list1.clear();
+  list1.assign(output.begin(), output.end());
+  index1.clear();
+  index1.assign(ouputIndex.begin(), ouputIndex.end());
+}
 
 
 void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
@@ -308,7 +341,8 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
     std::cout << "printing merge content" << std::endl;
 
     tempAgents.assign(mergeX.begin(), mergeX.end());
-    // tempAgents_reste = mergeCPU(tempAgents_reste, mergeX_reste);
+
+    mergeCPU(tempAgents_reste, mergeX_reste, tempIndex_reste, mergeIndex_rest);
 
     tempIndex.assign(mergeIndex.begin(), mergeIndex.end());
 

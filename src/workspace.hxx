@@ -61,6 +61,7 @@ public:
   Real wc, Real wa, Real ws,
   Real rc, Real ra, Real rs);
   void move();
+  void mergeCPU(std::vector<float> &list1, std::vector<float> list2, std::vector<int> &index1, std::vector<int> index2);
   void simulate(int nsteps);
   void save(int stepid);
 };
