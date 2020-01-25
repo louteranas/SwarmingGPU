@@ -273,20 +273,20 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
   groupeSize *= 2;
   int tempSize = (globalSize / groupeSize) * groupeSize;
   int counter = 0;
-  std::cout << "first copy" << std::endl;
   std::vector<float> tempAgents(h_X.begin(), h_X.end());
   std::vector<float> tempAgents_reste(h_X_rest.begin(), h_X_rest.end());
+  std::cout << tempAgents_reste.size()<< std::endl;
+
   std::vector<int> tempIndex(h_index.begin(), h_index.end());
   std::vector<int> tempIndex_reste(h_index_rest.begin(), h_index_rest.end());
-  std::cout << "between" << std::endl;
 
   while(tempSize/groupeSize > 1){
     //Split the vector into 2 of the good size
     std::vector<float> mergeX(tempAgents.begin(), tempAgents.begin() + tempSize);
-    std::vector<float> mergeX_reste(tempAgents_reste.begin() + tempSize, tempAgents_reste.end());
+    std::vector<float> mergeX_reste(tempAgents.begin() + tempSize, tempAgents.end());
 
     std::vector<int> mergeIndex(tempIndex.begin(), tempIndex.begin() + tempSize);
-    std::vector<int> mergeIndex_rest(tempIndex_reste.begin() + tempSize, tempIndex_reste.end());
+    std::vector<int> mergeIndex_rest(tempIndex.begin() + tempSize, tempIndex.end());
 
     d_X = cl::Buffer(context, mergeX.begin(), mergeX.end(), CL_MEM_READ_WRITE, true);
     d_index = cl::Buffer(context, mergeIndex.begin(), mergeIndex.end(), CL_MEM_READ_WRITE, true);
