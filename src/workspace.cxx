@@ -185,11 +185,11 @@ void Workspace::sortAgentsByZ(){
 void Workspace::sortAgents(){
   //std::cout << "salut"<< std::endl;
 
-  sortAgentsGPU();
-  for (auto it : agents){
-    std::cerr << it.position[0] <<  " ";
-  }
-  std::cerr << std::endl;
+  // sortAgentsGPU();
+  // for (auto it : agents){
+  //   std::cerr << it.position[0] <<  " ";
+  // }
+  // std::cerr << std::endl;
 
   // agents = copyAgents;
   /*
@@ -203,10 +203,10 @@ void Workspace::sortAgents(){
   //   std::cout << it.position[0] <<  " ";
   // }*/
   // std::cout << std::endl;
-  for (auto it : agents){
-    std::cerr << it.position[0] <<  " ";
-  }
-  std::cerr << std::endl;
+  // for (auto it : agents){
+  //   std::cerr << it.position[0] <<  " ";
+  // }
+  // std::cerr << std::endl;
 
   // getNeighborhoodGPU();  
   for (uint i = 0; i < agents.size(); i++){
@@ -577,7 +577,7 @@ void Workspace::simulate(int nsteps) {
     // sortAgentsGpu((uint) agents.size(), 6);
 
     // perform nsteps time steps of the simulation
-    /*
+    
     int step = 0;
     std::cout << " starting the mouvement " << std::endl;
     this->sortAgents();
@@ -599,7 +599,7 @@ void Workspace::simulate(int nsteps) {
 
 
     }
-    */
+    
 }
 
 void Workspace::save(int stepid) {
