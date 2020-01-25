@@ -1,1 +1,0 @@
-/opt/rh/devtoolset-8/root/usr/bin/c++  -Wno-deprecated-declarations -std=c++0x  -rdynamic CMakeFiles/boids.dir/main.cxx.o CMakeFiles/boids.dir/agent.cxx.o CMakeFiles/boids.dir/vector.cxx.o CMakeFiles/boids.dir/workspace.cxx.o  -o boids -lOpenCL 

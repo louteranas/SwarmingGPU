@@ -219,8 +219,8 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
   std::vector<float> h_X_rest(agentsX.begin() + globalSize, agentsX.end());
   std::vector<float> h_X(agentsX.begin(), agentsX.begin() + globalSize);
   
-  std::vector<float> h_index_rest(listIndex.begin() + globalSize, listIndex.end());
-  std::vector<float> h_index(listIndex.begin(), listIndex.begin() + globalSize);
+  std::vector<int> h_index_rest(listIndex.begin() + globalSize, listIndex.end());
+  std::vector<int> h_index(listIndex.begin(), listIndex.begin() + globalSize);
   //TODO bubble_sort of h_X_rest
 
   cl::Buffer d_X;
@@ -272,47 +272,63 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
   
   groupeSize *= 2;
   int tempSize = (globalSize / groupeSize) * groupeSize;
-  
-  //Split the vector into 2 of the good size
-  std::vector<float> mergeX(h_X.begin(), h_X.begin() + tempSize);
-  std::vector<float> mergeX_reste(h_X.begin() + tempSize, h_X.end());
+  int counter = 0;
+  std::cout << "first copy" << std::endl;
+  std::vector<float> tempAgents(h_X.begin(), h_X.end());
+  std::vector<float> tempAgents_reste(h_X_rest.begin(), h_X_rest.end());
+  std::vector<int> tempIndex(h_index.begin(), h_index.end());
+  std::vector<int> tempIndex_reste(h_index_rest.begin(), h_index_rest.end());
+  std::cout << "between" << std::endl;
 
-  std::vector<float> mergeIndex(h_index.begin(), h_index.begin() + tempSize);
-  std::vector<float> mergeIndex_rest(h_index.begin() + tempSize, h_index.end());
+  while(tempSize/groupeSize > 1){
+    //Split the vector into 2 of the good size
+    std::vector<float> mergeX(tempAgents.begin(), tempAgents.begin() + tempSize);
+    std::vector<float> mergeX_reste(tempAgents_reste.begin() + tempSize, tempAgents_reste.end());
 
-  d_X = cl::Buffer(context, mergeX.begin(), mergeX.end(), CL_MEM_READ_WRITE, true);
-  d_index = cl::Buffer(context, mergeIndex.begin(), mergeIndex.end(), CL_MEM_READ_WRITE, true);
+    std::vector<int> mergeIndex(tempIndex.begin(), tempIndex.begin() + tempSize);
+    std::vector<int> mergeIndex_rest(tempIndex_reste.begin() + tempSize, tempIndex_reste.end());
 
-  cl::Kernel kernel_merge = cl::Kernel(programMerge, "mergeList");
-  kernel_merge.setArg(0, d_X);
-  kernel_merge.setArg(1, d_index);
-  kernel_merge.setArg(2, tempSize);
-  kernel_merge.setArg(3, groupeSize);
+    d_X = cl::Buffer(context, mergeX.begin(), mergeX.end(), CL_MEM_READ_WRITE, true);
+    d_index = cl::Buffer(context, mergeIndex.begin(), mergeIndex.end(), CL_MEM_READ_WRITE, true);
 
-  global = cl::NDRange(tempSize);
-  local = cl::NDRange(groupeSize);
+    cl::Kernel kernel_merge = cl::Kernel(programMerge, "mergeList");
+    kernel_merge.setArg(0, d_X);
+    kernel_merge.setArg(1, d_index);
+    kernel_merge.setArg(2, tempSize);
+    kernel_merge.setArg(3, groupeSize);
 
-  queue.enqueueNDRangeKernel(kernel_merge, cl::NullRange, global, local);
-  queue.finish();
-  cl::copy(queue, d_X, mergeX.begin(), mergeX.end());
-  cl::copy(queue, d_index, mergeIndex.begin(), mergeIndex.end());
+    global = cl::NDRange(tempSize);
+    local = cl::NDRange(groupeSize);
 
-  std::cout << "printing merge content" << std::endl;
+    queue.enqueueNDRangeKernel(kernel_merge, cl::NullRange, global, local);
+    queue.finish();
+    cl::copy(queue, d_X, mergeX.begin(), mergeX.end());
+    cl::copy(queue, d_index, mergeIndex.begin(), mergeIndex.end());
 
-  for (int j = 0; j < mergeX.size(); j++){
-  
-    std::cout <<  mergeX[j]<<" ";
-    if ((j + 1) % 6 == 0){
-      std::cout << " | ";
+    std::cout << "printing merge content" << std::endl;
+
+    tempAgents.assign(mergeX.begin(), mergeX.end());
+    // tempAgents_reste = mergeCPU(tempAgents_reste, mergeX_reste);
+
+    tempIndex.assign(mergeIndex.begin(), mergeIndex.end());
+
+    groupeSize *= 2;
+    tempSize = (globalSize / groupeSize) * groupeSize;
+     // tempAgents_reste = mergeCPU(tempAgents_reste, mergeX_reste);
+    for (int j = 0; j < mergeX.size(); j++){
+    
+      std::cout <<  mergeX[j]<<" ";
+      if ((j + 1) % 6 == 0){
+        std::cout << " | ";
+      }
     }
-  }
-  std::cout << std::endl;
+    std::cout << std::endl;
 
-  for (int j = 0; j < mergeX.size(); j++){
-    std::cout <<  mergeIndex[j]<<" ";
+    for (int j = 0; j < mergeX.size(); j++){
+      std::cout <<  mergeIndex[j]<<" ";
+    }
+    std::cout << std::endl;
   }
-  std::cout << std::endl;
-
   //Notre cas d'arrêt
   // while ((tempSize / groupeSize) > 1){
 
