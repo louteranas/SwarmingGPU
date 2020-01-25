@@ -275,7 +275,10 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
   }
 
 
-
+  for (int j = 0; j < agentsX.size(); j++){
+      std::cout <<  listIndex[j]<<" : " << agentsX[j] <<" | "  ;
+  }
+   std::cout << std::endl;
   
 
   //Create the globalGroup as a multiple of the workgroup
@@ -317,21 +320,6 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
   cl::copy(queue, d_X, h_X.begin(), h_X.end());
   cl::copy(queue, d_index, h_index.begin(), h_index.end());
 
-  std::cout << "printing test content" << std::endl;
-
-  for (int j = 0; j < h_X.size(); j++){
-    std::cout <<  h_X[j]<<" ";
-        if ((j + 1) % 3 == 0){
-      std::cout << " | ";
-    }
-  }
-  std::cout << std::endl;
-
-  for (int j = 0; j < h_X.size(); j++){
-    std::cout <<  h_index[j]<<" ";
-  }
-  std::cout << std::endl;
-
   //==================================================================
   //______________Kernel for merging the things__________
   cl::Program programMerge(context, util::loadProgram("merging.cl"), true);
@@ -372,8 +360,6 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
     cl::copy(queue, d_X, mergeX.begin(), mergeX.end());
     cl::copy(queue, d_index, mergeIndex.begin(), mergeIndex.end());
 
-    std::cout << "printing merge content" << std::endl;
-
     tempAgents.assign(mergeX.begin(), mergeX.end());
 
     mergeCPU(tempAgents_reste, mergeX_reste, tempIndex_reste, mergeIndex_rest);
@@ -382,31 +368,21 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
 
     groupeSize *= 2;
     tempSize = (globalSize / groupeSize) * groupeSize;
-     // tempAgents_reste = mergeCPU(tempAgents_reste, mergeX_reste);
-    for (int j = 0; j < mergeX.size(); j++){
-    
-      std::cout <<  mergeX[j]<<" ";
-      if ((j + 1) % 6 == 0){
-        std::cout << " | ";
-      }
-    }
-    std::cout << std::endl;
 
-    for (int j = 0; j < mergeX.size(); j++){
-      std::cout <<  mergeIndex[j]<<" ";
-    }
-    std::cout << std::endl;
   }
 
-  std::cout << "temps agentssize is " << tempIndex.size() << std::endl;
-  std::cout << "temps agents  reste size is " << tempIndex_reste.size() << std::endl;
 
   mergeCPU(tempAgents, tempAgents_reste, tempIndex, tempIndex_reste);
-  std::cout <<  tempAgents.size()<<"\n ";
+
   for (int j = 0; j < tempAgents.size(); j++){
-      std::cout <<  tempAgents[j]<<" ";
-    }
-    std::cout << std::endl;
+      std::cout <<  tempIndex[j] << " : " << tempAgents[j]<< " | ";
+  }
+   std::cout << std::endl;
+  for (int j = 0; j < tempIndex.size(); j++){
+      std::cout <<  tempIndex[j]<<" ";
+  }
+   std::cout << std::endl;
+
 
 }
 
@@ -459,7 +435,7 @@ void Workspace::getNeighborhood(uint index){
     }
   }
 
-  //std::cout << "la taille des voisins est " << agents.at(index).neighbors.size()<<std::endl;
+
 }
 
 void Workspace::move()
