@@ -192,6 +192,14 @@ void Workspace::mergeCPU(std::vector<float> &list1, std::vector<float> list2, st
   std::vector<int> ouputIndex;
   int iterator1 = 0;
   int iterator2 = 0;
+  std::cout << "MERGING LES PUTAINS DE LISTE : " << list1.size() << " | " << list2.size() << std::endl;
+  if(list2.size() == 0)
+    return;
+  if(list1.size() == 0){
+    list1.assign(list2.begin(), list2.end());
+    std::cout << "LA TAILLE DE LA PUTAIN DE LISTE : " << list1.size()  << std::endl;
+    return;
+  }
   while(iterator1<list1.size() && iterator2 < list2.size()){
     if(list1[iterator1] > list2[iterator2]){
       output.push_back(list1[iterator1]);
@@ -215,9 +223,7 @@ void Workspace::mergeCPU(std::vector<float> &list1, std::vector<float> list2, st
       ouputIndex.push_back(index2[i]);
     }
   }
-  list1.clear();
   list1.assign(output.begin(), output.end());
-  index1.clear();
   index1.assign(ouputIndex.begin(), ouputIndex.end());
 }
 
@@ -391,6 +397,15 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
     }
     std::cout << std::endl;
   }
+  std::cout << "temps agentssize is " << tempAgents.size() << std::endl;
+  std::cout << "temps agents size is " << tempAgents_reste.size() << std::endl;
+
+  mergeCPU(tempAgents, tempAgents_reste, tempIndex, tempIndex_reste);
+  std::cout <<  tempAgents.size()<<"\n ";
+  for (int j = 0; j < tempAgents.size(); j++){
+      std::cout <<  tempAgents[j]<<" ";
+    }
+    std::cout << std::endl;
   //Notre cas d'arrêt
   // while ((tempSize / groupeSize) > 1){
 
@@ -497,7 +512,7 @@ void Workspace::move()
 void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
-    sortAgentsGpu((uint) agents.size(), 6);
+    sortAgentsGpu((uint) agents.size(), 3);
     // sortAgentsGpu((uint) agents.size(), 6);
 /*
     // perform nsteps time steps of the simulation
