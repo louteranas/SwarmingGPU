@@ -22,7 +22,7 @@ protected:
   voxelsContainer sortedAgents;
   unsigned int na;
   //A initialiser
-  unsigned int sideCount = 5;
+  unsigned int sideCount = 3;
 
   Real dt;
   int time;
@@ -59,7 +59,8 @@ protected:
   void mergeLists(unsigned int startIndex1, unsigned int size1, unsigned int startIndex2, unsigned int size2, unsigned int coord);
   void getNeighborhood(uint index);
   void bubble_sort_GPU(std::vector<float> &h_agents, std::vector<int> &indexAgents);
-
+  void getNeighborhoodGPU();
+  
 public:
   Workspace(ArgumentParser &parser);
 

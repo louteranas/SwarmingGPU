@@ -32,7 +32,7 @@ Workspace::Workspace(ArgumentParser &parser)
   time = 0.;
   this->init();
   
-  // this->sortAgents();
+   this->sortAgents();
 }
 
 Workspace::Workspace(size_t nAgents,
@@ -183,17 +183,36 @@ void Workspace::sortAgentsByZ(){
 
 
 void Workspace::sortAgents(){
-    /*
+  //std::cout << "salut"<< std::endl;
+
+  sortAgentsGPU();
+  for (auto it : agents){
+    std::cerr << it.position[0] <<  " ";
+  }
+  std::cerr << std::endl;
+
+  // agents = copyAgents;
+  /*
   // we first sort by X to create YZ planes
   this->sortAgentsByX();
   // we then sort by Y to create lines
   this->sortAgentsByY();
   // we finally sort by Z to create voxels
   this->sortAgentsByZ();
+  // for (auto it : agents){
+  //   std::cout << it.position[0] <<  " ";
+  // }*/
+  // std::cout << std::endl;
+  for (auto it : agents){
+    std::cerr << it.position[0] <<  " ";
+  }
+  std::cerr << std::endl;
+
+  // getNeighborhoodGPU();  
   for (uint i = 0; i < agents.size(); i++){
     getNeighborhood(i);
   }
-  */
+  
 }
 
 void Workspace::mergeCPU(std::vector<float> &list1, std::vector<float> list2, std::vector<int> &index1, std::vector<int> index2){
@@ -201,7 +220,6 @@ void Workspace::mergeCPU(std::vector<float> &list1, std::vector<float> list2, st
   std::vector<int> ouputIndex;
   int iterator1 = 0;
   int iterator2 = 0;
-  std::cout << "MERGING LES PUTAINS DE LISTE : " << list1.size() << " | " << list2.size() << std::endl;
   if(list2.size() == 0)
     return;
   if(list1.size() == 0){
@@ -235,7 +253,6 @@ void Workspace::mergeCPU(std::vector<float> &list1, std::vector<float> list2, st
   }
   list1.assign(output.begin(), output.end());
   index1.assign(ouputIndex.begin(), ouputIndex.end());
-  std::cout << "MERGING LES PUTAINS DE LISTE  SORTIE: " << list1.size() << std::endl;
 }
 
 
@@ -276,7 +293,8 @@ std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsPr
 
   //Create the globalGroup as a multiple of the workgroup
   const int globalSize = ((endIndex-startIndex) / groupeSize) * groupeSize;
-  std::vector<float> h_X_rest(agentsProjection.begin() + startIndex + globalSize, agentsProjection.begin() + startIndex + endIndex);
+  std::vector<float> h_X_rest(agentsProjection.begin() + startIndex + globalSize, agentsProjection.begin() + endIndex);
+  
   std::vector<float> h_X(agentsProjection.begin() + startIndex, agentsProjection.begin() + startIndex + globalSize);
 
   std::vector<int> h_index_rest(listIndex.begin() + globalSize, listIndex.end());
@@ -321,7 +339,6 @@ std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsPr
   
   groupeSize *= 2;
   int tempSize = (globalSize / groupeSize) * groupeSize;
-  std::cout << "tempSize " << tempSize << std::endl;
   int counter = 0;
   std::vector<float> tempAgents(h_X.begin(), h_X.end());
   std::vector<float> tempAgents_reste(h_X_rest.begin(), h_X_rest.end());
@@ -361,10 +378,8 @@ std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsPr
     tempIndex.assign(mergeIndex.begin(), mergeIndex.end()); 
 
 
-    std::cout << tempAgents_reste.size() << " autre " << mergeX_reste.size() << std::endl;
-    mergeCPU(tempAgents_reste, mergeX_reste, tempIndex_reste, mergeIndex_rest);
-    std::cout << tempAgents_reste.size() << " autre " << mergeX_reste.size() << std::endl;
 
+    mergeCPU(tempAgents_reste, mergeX_reste, tempIndex_reste, mergeIndex_rest);
 
 
     groupeSize *= 2;
@@ -374,21 +389,51 @@ std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsPr
 
   mergeCPU(tempAgents, tempAgents_reste, tempIndex, tempIndex_reste);
 
-  for (int j = 0; j < tempAgents.size(); j++){
-      std::cout <<  tempIndex[j] << " : " << tempAgents[j]<< " | ";
-  }
-   std::cout << std::endl;
-
   return tempIndex;
-  // std::cout << tempAgents.size() << std::endl;
-  // for (int i = 0; i < endIndex - startIndex; i++){
-  //   agentsIndex[startIndex + i] = tempIndex[i];
-  // }
 
 
 }
 
 
+
+void Workspace::getNeighborhoodGPU(){
+  cl::Buffer d_voisins;
+
+
+  // Load in kernel source, creating a program object for the context
+  cl::Context context(chosen_device);
+  cl::CommandQueue queue(context, device);
+  //Kernel for sorting with a param
+
+  cl::Program program(context, util::loadProgram("neighborhood.cl"), true);
+  int d_voisins_size = (pow(sideCount, 3) - 1) * na;
+  d_voisins = cl::Buffer(context, CL_MEM_WRITE_ONLY, sizeof(int) * d_voisins_size);
+  std::vector<int> voisins(d_voisins_size);
+
+  cl::Kernel kernel_neighbor = cl::Kernel(program, "getVoisins");
+  kernel_neighbor.setArg(0, d_voisins);
+  kernel_neighbor.setArg(1, (int) sideCount / 2);
+  kernel_neighbor.setArg(2, (int) pow(agents.size(), 1.0/3.0));
+  
+  cl::NDRange global(agents.size());
+  cl::NDRange local(1);
+  queue.enqueueNDRangeKernel(kernel_neighbor, cl::NullRange, global, local);
+  queue.finish();
+  cl::copy(queue, d_voisins, voisins.begin(), voisins.end());
+  int compteur = 0;
+  for (auto it : voisins)
+  {
+    std::cout << it << " ";
+    if ( (compteur + 1) % (d_voisins_size / na) ){
+      std:: cout << " | ";
+    }
+  }
+  std::cout << std::endl;
+
+  // for (int i = 0; i < agents.size(); i++){
+  //   agents[i].nei
+  // }
+}
 
 
 
@@ -406,7 +451,7 @@ void Workspace::getNeighborhood(uint index){
     return;
   }
   int cote = pow(na, 1./3.);
-  int currentZ = index % cote;
+  int currentZ = index  % cote;
   int tempIndex = index / cote;
   int currentY = tempIndex % cote;
   tempIndex = tempIndex / cote;
@@ -485,8 +530,8 @@ void Workspace::move()
 
 void Workspace::sortAgentsByComponentGPU(int coordIndex, int startIndex, int endIndex){
   std::vector<float> agentsProjection = convertAgents(coordIndex);
-  std::vector<int> agentsIndex  = sortGPU(3, agentsProjection, startIndex, endIndex);
-  std::cout << "agentsIndex size " << agentsIndex.size() << std::endl;  
+
+  std::vector<int> agentsIndex  = sortGPU(254, agentsProjection, startIndex, endIndex);
   std::vector<Agent> tempAgents;
 
   for (int i = 0 ; i < endIndex - startIndex; i++){
@@ -498,48 +543,41 @@ void Workspace::sortAgentsByComponentGPU(int coordIndex, int startIndex, int end
   } 
 
   for (int i = 0; i < endIndex - startIndex; i++){
-    agents.at(startIndex + i)  = tempAgents[startIndex + i];
+    agents.at(startIndex + i)  = tempAgents[i];
   }
 
-  for(int i = startIndex; i < endIndex; i++){
-    std::cout << agents.at(i).position[coordIndex] << " ";
-  }
-  std::cout << "\n ";
 }
 
 void Workspace::sortAgentsGPU(){
   sortAgentsByComponentGPU(0, 0, agents.size());
-  sortAgentsByComponentGPU(0, 0, agents.size());
-  // sortAgentsByComponentGPU(1, 0, 9);
-  // sortAgentsByComponentGPU(1, 9, 18);
-  // sortAgentsByComponentGPU(1, 18, 27);
 
-  //  // creating the voxel container witch defines the ZY planes
-  // unsigned int numberOfIterationsY = pow(agents.size(), 1.0/3.0);  //2
-  // unsigned int numberOfPlanAgentsY = pow(numberOfIterationsY, 2); //4
 
-  // for(unsigned int i = 0; i < numberOfIterationsY; i++){
-  //   sortAgentsByComponentGPU(1, i * numberOfPlanAgentsY, (i+1) * numberOfPlanAgentsY);
-  // }
+   // creating the voxel container witch defines the ZY planes
+  unsigned int numberOfIterationsY = pow(agents.size(), 1.0/3.0);  //2
+  unsigned int numberOfPlanAgentsY = pow(numberOfIterationsY, 2); //4
 
-  // // creating the voxel container witch defines the ZY planes
-  // unsigned int  numberOfLineAgentsZ = pow(agents.size(), 1.0/3.0);
-  // unsigned int numberOfIterationsZ = pow(numberOfLineAgentsZ, 2);
+  for(unsigned int i = 0; i < numberOfIterationsY; i++){
+    sortAgentsByComponentGPU(1, i * numberOfPlanAgentsY, (i+1) * numberOfPlanAgentsY);
+  }
 
-  // for(unsigned int i = 0; i < numberOfIterationsZ; i++){
-  //   sortAgentsByComponentGPU(2, i * numberOfLineAgentsZ, (i+1) * numberOfLineAgentsZ);
-  // }
+  // creating the voxel container witch defines the ZY planes
+  unsigned int  numberOfLineAgentsZ = pow(agents.size(), 1.0/3.0);
+  unsigned int numberOfIterationsZ = pow(numberOfLineAgentsZ, 2);
+
+  for(unsigned int i = 0; i < numberOfIterationsZ; i++){
+    sortAgentsByComponentGPU(2, i * numberOfLineAgentsZ, (i+1) * numberOfLineAgentsZ);
+  }
 
 }
 
 void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
-    sortAgentsGPU();
 
     // sortAgentsGpu((uint) agents.size(), 6);
-/*
+
     // perform nsteps time steps of the simulation
+    /*
     int step = 0;
     std::cout << " starting the mouvement " << std::endl;
     this->sortAgents();
@@ -551,10 +589,10 @@ void Workspace::simulate(int nsteps) {
          this->sortAgents();
          std::cout << step << std::endl;
        }
-      if (step % 20 == 0){
-        //this->sortAgents();
+      if (step % 20 == 0){;
         save(step);
       }
+      
       //if (step %100 == 0){
       //  std::cout << step << std::endl;
      // }
