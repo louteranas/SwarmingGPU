@@ -222,6 +222,29 @@ void Workspace::mergeCPU(std::vector<float> &list1, std::vector<float> list2, st
 }
 
 
+void Workspace::bubble_sort_GPU(std::vector<float> &h_agents, std::vector<int> &indexAgents ){
+  int startIndex = 0;
+  float tempAgents = h_agents.at(startIndex);
+  float tempIndex = indexAgents.at(startIndex);
+  int endIndex = h_agents.size();
+
+  for(size_t j = endIndex-1; j > startIndex; j--){
+    for(size_t k = startIndex; k<j ; k++){
+      if(h_agents[k] > h_agents[k + 1]){
+        tempAgents = h_agents[k];
+        h_agents[k] = h_agents[k+1];
+        h_agents[k+1] = tempAgents;
+        tempIndex = indexAgents[k];
+        indexAgents[k] = indexAgents[k+1];
+        indexAgents[k+1] = tempIndex;        
+      }
+    }
+  }
+
+}
+
+
+
 void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
   // Choosing GPU device
   cl_uint deviceIndex = 0;
@@ -245,6 +268,8 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
     listIndex.push_back(j);
   }
 
+
+
   
 
   //Create the globalGroup as a multiple of the workgroup
@@ -254,7 +279,10 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
   
   std::vector<int> h_index_rest(listIndex.begin() + globalSize, listIndex.end());
   std::vector<int> h_index(listIndex.begin(), listIndex.begin() + globalSize);
-  //TODO bubble_sort of h_X_rest
+  if (h_X_rest.size() > 1){
+    bubble_sort_GPU(h_X_rest, h_index_rest);
+  }
+
 
   cl::Buffer d_X;
   cl::Buffer d_index;
@@ -469,7 +497,7 @@ void Workspace::move()
 void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
-    sortAgentsGpu((uint) agents.size(), 3);
+    sortAgentsGpu((uint) agents.size(), 6);
     // sortAgentsGpu((uint) agents.size(), 6);
 /*
     // perform nsteps time steps of the simulation
