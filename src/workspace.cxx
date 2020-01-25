@@ -254,6 +254,9 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
 
   for (int j = 0; j < h_X.size(); j++){
     std::cout <<  h_X[j]<<" ";
+        if ((j + 1) % 3 == 0){
+      std::cout << " | ";
+    }
   }
   std::cout << std::endl;
 
@@ -262,15 +265,59 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
   }
   std::cout << std::endl;
 
-
+  //==================================================================
   //______________Kernel for merging the things__________
   cl::Program programMerge(context, util::loadProgram("merging.cl"), true);
-  int tempSize = globalSize;
+  
+  
   groupeSize *= 2;
-  //Notre cas d'arrêt
-  while ((tempSize / groupeSize) > 1){
+  int tempSize = (globalSize / groupeSize) * groupeSize;
+  
+  //Split the vector into 2 of the good size
+  std::vector<float> mergeX(h_X.begin(), h_X.begin() + tempSize);
+  std::vector<float> mergeX_reste(h_X.begin() + tempSize, h_X.end());
 
+  std::vector<float> mergeIndex(h_index.begin(), h_index.begin() + tempSize);
+  std::vector<float> mergeIndex_rest(h_index.begin() + tempSize, h_index.end());
+
+  d_X = cl::Buffer(context, mergeX.begin(), mergeX.end(), CL_MEM_READ_WRITE, true);
+  d_index = cl::Buffer(context, mergeIndex.begin(), mergeIndex.end(), CL_MEM_READ_WRITE, true);
+
+  cl::Kernel kernel_merge = cl::Kernel(programMerge, "mergeList");
+  kernel_merge.setArg(0, d_X);
+  kernel_merge.setArg(1, d_index);
+  kernel_merge.setArg(2, tempSize);
+  kernel_merge.setArg(3, groupeSize);
+
+  global = cl::NDRange(tempSize);
+  local = cl::NDRange(groupeSize);
+
+  queue.enqueueNDRangeKernel(kernel_merge, cl::NullRange, global, local);
+  queue.finish();
+  cl::copy(queue, d_X, mergeX.begin(), mergeX.end());
+  cl::copy(queue, d_index, mergeIndex.begin(), mergeIndex.end());
+
+  std::cout << "printing merge content" << std::endl;
+
+  for (int j = 0; j < mergeX.size(); j++){
+  
+    std::cout <<  mergeX[j]<<" ";
+    if ((j + 1) % 6 == 0){
+      std::cout << " | ";
+    }
   }
+  std::cout << std::endl;
+
+  for (int j = 0; j < mergeX.size(); j++){
+    std::cout <<  mergeIndex[j]<<" ";
+  }
+  std::cout << std::endl;
+
+  //Notre cas d'arrêt
+  // while ((tempSize / groupeSize) > 1){
+
+  // }
+  
 
 }
 
@@ -372,7 +419,7 @@ void Workspace::move()
 void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
-    sortAgentsGpu((uint) agents.size(), 8);
+    sortAgentsGpu((uint) agents.size(), 3);
     // sortAgentsGpu((uint) agents.size(), 6);
 /*
     // perform nsteps time steps of the simulation
