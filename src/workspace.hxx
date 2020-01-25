@@ -49,7 +49,7 @@ protected:
   Real domainsize;
   void init();
   void sortAgents();
-  void sortAgentsGpu(int groupeSize, std::vector<float> &agentsX, int startIndex, int endIndex);
+  std::vector<int> sortAgentsGpu(int groupeSize, std::vector<float> &agentsX, int startIndex, int endIndex);
   void sortAgentsByX();
   void sortAgentsByY();
   void sortAgentsByZ();

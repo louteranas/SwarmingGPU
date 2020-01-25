@@ -229,11 +229,13 @@ void Workspace::mergeCPU(std::vector<float> &list1, std::vector<float> list2, st
   }
   if(iterator2 < list2.size()){
     for(int i = iterator2; i < list2.size(); i++){
+      output.push_back(list2[i]);
       ouputIndex.push_back(index2[i]);
     }
   }
   list1.assign(output.begin(), output.end());
   index1.assign(ouputIndex.begin(), ouputIndex.end());
+  std::cout << "MERGING LES PUTAINS DE LISTE  SORTIE: " << list1.size() << std::endl;
 }
 
 
@@ -260,7 +262,7 @@ void Workspace::bubble_sort_GPU(std::vector<float> &h_agents, std::vector<int> &
 
 
 
-void Workspace::sortAgentsGpu(int groupeSize, std::vector<float> &agentsProjection, int startIndex, int endIndex){
+std::vector<int> Workspace::sortAgentsGpu(int groupeSize, std::vector<float> &agentsProjection, int startIndex, int endIndex){
   
   //Init param
 
@@ -272,20 +274,14 @@ void Workspace::sortAgentsGpu(int groupeSize, std::vector<float> &agentsProjecti
     listIndex.push_back(j);
   }
 
-
-  for (int j = 0; j < agentsProjection.size(); j++){
-      std::cout <<  listIndex[j]<<" : " << agentsProjection[j] <<" | "  ;
-  }
-   std::cout << std::endl;
-  
-
   //Create the globalGroup as a multiple of the workgroup
   const int globalSize = ((endIndex-startIndex) / groupeSize) * groupeSize;
-  std::vector<float> h_X_rest(agentsProjection.begin() + globalSize, agentsProjection.end());
-  std::vector<float> h_X(agentsProjection.begin(), agentsProjection.begin() + globalSize);
-  
+  std::vector<float> h_X_rest(agentsProjection.begin() + startIndex + globalSize, agentsProjection.begin() + startIndex + endIndex);
+  std::vector<float> h_X(agentsProjection.begin() + startIndex, agentsProjection.begin() + startIndex + globalSize);
+
   std::vector<int> h_index_rest(listIndex.begin() + globalSize, listIndex.end());
   std::vector<int> h_index(listIndex.begin(), listIndex.begin() + globalSize);
+
   if (h_X_rest.size() > 1){
     bubble_sort_GPU(h_X_rest, h_index_rest);
   }
@@ -325,13 +321,16 @@ void Workspace::sortAgentsGpu(int groupeSize, std::vector<float> &agentsProjecti
   
   groupeSize *= 2;
   int tempSize = (globalSize / groupeSize) * groupeSize;
+  std::cout << "tempSize " << tempSize << std::endl;
   int counter = 0;
   std::vector<float> tempAgents(h_X.begin(), h_X.end());
   std::vector<float> tempAgents_reste(h_X_rest.begin(), h_X_rest.end());
-  std::cout << tempAgents_reste.size()<< std::endl;
+
 
   std::vector<int> tempIndex(h_index.begin(), h_index.end());
   std::vector<int> tempIndex_reste(h_index_rest.begin(), h_index_rest.end());
+
+
 
   while(tempSize/groupeSize > 0){
     //Split the vector into 2 of the good size
@@ -358,15 +357,18 @@ void Workspace::sortAgentsGpu(int groupeSize, std::vector<float> &agentsProjecti
     cl::copy(queue, d_X, mergeX.begin(), mergeX.end());
     cl::copy(queue, d_index, mergeIndex.begin(), mergeIndex.end());
 
-    tempAgents.assign(mergeX.begin(), mergeX.end());
+    tempAgents.assign(mergeX.begin(), mergeX.end()); //20
+    tempIndex.assign(mergeIndex.begin(), mergeIndex.end()); 
 
+
+    std::cout << tempAgents_reste.size() << " autre " << mergeX_reste.size() << std::endl;
     mergeCPU(tempAgents_reste, mergeX_reste, tempIndex_reste, mergeIndex_rest);
+    std::cout << tempAgents_reste.size() << " autre " << mergeX_reste.size() << std::endl;
 
-    tempIndex.assign(mergeIndex.begin(), mergeIndex.end());
+
 
     groupeSize *= 2;
     tempSize = (globalSize / groupeSize) * groupeSize;
-
   }
 
 
@@ -376,10 +378,12 @@ void Workspace::sortAgentsGpu(int groupeSize, std::vector<float> &agentsProjecti
       std::cout <<  tempIndex[j] << " : " << tempAgents[j]<< " | ";
   }
    std::cout << std::endl;
-  for (int j = 0; j < tempIndex.size(); j++){
-      std::cout <<  tempIndex[j]<<" ";
-  }
-   std::cout << std::endl;
+
+  return tempIndex;
+  // std::cout << tempAgents.size() << std::endl;
+  // for (int i = 0; i < endIndex - startIndex; i++){
+  //   agentsIndex[startIndex + i] = tempIndex[i];
+  // }
 
 
 }
@@ -483,7 +487,29 @@ void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
     std::vector<float> agentsProjection = convertAgents(0);
-    sortAgentsGpu(5, agentsProjection, 0, agentsProjection.size());
+    int startIndex = 0;
+    int endIndex = 23;
+    std::vector<int> agentsIndex  = sortAgentsGpu(3, agentsProjection, startIndex, endIndex);
+    std::cout << "agentsIndex size " << agentsIndex.size() << std::endl;  
+    std::vector<Agent> tempAgents;
+
+    for (int i = 0 ; i < endIndex - startIndex; i++){
+      tempAgents.push_back(agents.at(0));
+    }
+
+    for (int i = 0 ; i < endIndex - startIndex; i++){
+      tempAgents[i] = agents.at(agentsIndex[i]);
+    } 
+
+    for (int i = 0; i < endIndex - startIndex; i++){
+      agents.at(startIndex + i)  = tempAgents[startIndex + i];
+    }
+
+    for(int i = 0; i < agents.size(); i++){
+      std::cout << agents.at(i).position[0] << " ";
+    }
+    std::cout << "\n ";
+
     // sortAgentsGpu((uint) agents.size(), 6);
 /*
     // perform nsteps time steps of the simulation
