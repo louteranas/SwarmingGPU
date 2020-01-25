@@ -32,7 +32,7 @@ Workspace::Workspace(ArgumentParser &parser)
   time = 0.;
   this->init();
   
-  this->sortAgents();
+  // this->sortAgents();
 }
 
 Workspace::Workspace(size_t nAgents,
@@ -262,7 +262,7 @@ void Workspace::bubble_sort_GPU(std::vector<float> &h_agents, std::vector<int> &
 
 
 
-std::vector<int> Workspace::sortAgentsGpu(int groupeSize, std::vector<float> &agentsProjection, int startIndex, int endIndex){
+std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsProjection, int startIndex, int endIndex){
   
   //Init param
 
@@ -483,32 +483,59 @@ void Workspace::move()
 
 }
 
+void Workspace::sortAgentsByComponentGPU(int coordIndex, int startIndex, int endIndex){
+  std::vector<float> agentsProjection = convertAgents(coordIndex);
+  std::vector<int> agentsIndex  = sortGPU(3, agentsProjection, startIndex, endIndex);
+  std::cout << "agentsIndex size " << agentsIndex.size() << std::endl;  
+  std::vector<Agent> tempAgents;
+
+  for (int i = 0 ; i < endIndex - startIndex; i++){
+    tempAgents.push_back(agents.at(0));
+  }
+
+  for (int i = 0 ; i < endIndex - startIndex; i++){
+    tempAgents[i] = agents.at(agentsIndex[i]);
+  } 
+
+  for (int i = 0; i < endIndex - startIndex; i++){
+    agents.at(startIndex + i)  = tempAgents[startIndex + i];
+  }
+
+  for(int i = startIndex; i < endIndex; i++){
+    std::cout << agents.at(i).position[coordIndex] << " ";
+  }
+  std::cout << "\n ";
+}
+
+void Workspace::sortAgentsGPU(){
+  sortAgentsByComponentGPU(0, 0, agents.size());
+  sortAgentsByComponentGPU(0, 0, agents.size());
+  // sortAgentsByComponentGPU(1, 0, 9);
+  // sortAgentsByComponentGPU(1, 9, 18);
+  // sortAgentsByComponentGPU(1, 18, 27);
+
+  //  // creating the voxel container witch defines the ZY planes
+  // unsigned int numberOfIterationsY = pow(agents.size(), 1.0/3.0);  //2
+  // unsigned int numberOfPlanAgentsY = pow(numberOfIterationsY, 2); //4
+
+  // for(unsigned int i = 0; i < numberOfIterationsY; i++){
+  //   sortAgentsByComponentGPU(1, i * numberOfPlanAgentsY, (i+1) * numberOfPlanAgentsY);
+  // }
+
+  // // creating the voxel container witch defines the ZY planes
+  // unsigned int  numberOfLineAgentsZ = pow(agents.size(), 1.0/3.0);
+  // unsigned int numberOfIterationsZ = pow(numberOfLineAgentsZ, 2);
+
+  // for(unsigned int i = 0; i < numberOfIterationsZ; i++){
+  //   sortAgentsByComponentGPU(2, i * numberOfLineAgentsZ, (i+1) * numberOfLineAgentsZ);
+  // }
+
+}
+
 void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
-    std::vector<float> agentsProjection = convertAgents(0);
-    int startIndex = 0;
-    int endIndex = 23;
-    std::vector<int> agentsIndex  = sortAgentsGpu(3, agentsProjection, startIndex, endIndex);
-    std::cout << "agentsIndex size " << agentsIndex.size() << std::endl;  
-    std::vector<Agent> tempAgents;
-
-    for (int i = 0 ; i < endIndex - startIndex; i++){
-      tempAgents.push_back(agents.at(0));
-    }
-
-    for (int i = 0 ; i < endIndex - startIndex; i++){
-      tempAgents[i] = agents.at(agentsIndex[i]);
-    } 
-
-    for (int i = 0; i < endIndex - startIndex; i++){
-      agents.at(startIndex + i)  = tempAgents[startIndex + i];
-    }
-
-    for(int i = 0; i < agents.size(); i++){
-      std::cout << agents.at(i).position[0] << " ";
-    }
-    std::cout << "\n ";
+    sortAgentsGPU();
 
     // sortAgentsGpu((uint) agents.size(), 6);
 /*
