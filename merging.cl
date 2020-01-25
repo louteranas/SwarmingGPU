@@ -1,14 +1,18 @@
+
+
 __kernel void mergeList(
     __global float* agents,
     __global int* indexList,
     int agentSize,
+
     int groupeSize)
-{
-    __local float[groupeSize] tempAgents;
-    __local int[groupeSize] tempIndex;
+{   
+    __local float tempAgents[2500];
+    __local int tempIndex[2500];
     uint wid = get_group_id(0);
     uint lid = get_local_id(0);
     uint gid = get_global_id(0);
+
     
     uint firstIndex = 0;
     uint secondIndex = groupeSize/2;
@@ -33,12 +37,12 @@ __kernel void mergeList(
         }
     }
     else{
-        for (int i = secondIndex ; i < groupeSize; i++){
+        for (int i = secondIndex ; i < groupeSize ; i++){
             tempAgents[counter] = agents[wid * groupeSize + i];
             tempIndex[counter++] = indexList[wid*groupeSize + i];
         }
     }
-    for (int i = 0; i < counter; i++){
+    for (int i = 0; i < groupeSize; i++){
         agents[wid * groupeSize + i] = tempAgents[i];
         indexList[wid * groupeSize + i] = tempIndex[i];
     }
