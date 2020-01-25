@@ -197,11 +197,11 @@ void Workspace::mergeCPU(std::vector<float> &list1, std::vector<float> list2, st
     return;
   if(list1.size() == 0){
     list1.assign(list2.begin(), list2.end());
-    std::cout << "LA TAILLE DE LA PUTAIN DE LISTE : " << list1.size()  << std::endl;
+    index1.assign(index2.begin(), index2.end());
     return;
   }
   while(iterator1<list1.size() && iterator2 < list2.size()){
-    if(list1[iterator1] > list2[iterator2]){
+    if(list1[iterator1] < list2[iterator2]){
       output.push_back(list1[iterator1]);
       ouputIndex.push_back(index1[iterator1]);
       iterator1++;
@@ -347,7 +347,7 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
   std::vector<int> tempIndex(h_index.begin(), h_index.end());
   std::vector<int> tempIndex_reste(h_index_rest.begin(), h_index_rest.end());
 
-  while(tempSize/groupeSize > 1){
+  while(tempSize/groupeSize > 0){
     //Split the vector into 2 of the good size
     std::vector<float> mergeX(tempAgents.begin(), tempAgents.begin() + tempSize);
     std::vector<float> mergeX_reste(tempAgents.begin() + tempSize, tempAgents.end());
@@ -397,8 +397,9 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
     }
     std::cout << std::endl;
   }
-  std::cout << "temps agentssize is " << tempAgents.size() << std::endl;
-  std::cout << "temps agents size is " << tempAgents_reste.size() << std::endl;
+
+  std::cout << "temps agentssize is " << tempIndex.size() << std::endl;
+  std::cout << "temps agents  reste size is " << tempIndex_reste.size() << std::endl;
 
   mergeCPU(tempAgents, tempAgents_reste, tempIndex, tempIndex_reste);
   std::cout <<  tempAgents.size()<<"\n ";
@@ -406,11 +407,6 @@ void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
       std::cout <<  tempAgents[j]<<" ";
     }
     std::cout << std::endl;
-  //Notre cas d'arrêt
-  // while ((tempSize / groupeSize) > 1){
-
-  // }
-  
 
 }
 
@@ -512,7 +508,7 @@ void Workspace::move()
 void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
-    sortAgentsGpu((uint) agents.size(), 3);
+    sortAgentsGpu((uint) agents.size(), 5);
     // sortAgentsGpu((uint) agents.size(), 6);
 /*
     // perform nsteps time steps of the simulation
