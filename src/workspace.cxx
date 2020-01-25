@@ -69,8 +69,17 @@ void Workspace::init(){
     agents.back().rs = rSeparation;
 
     // std::cout << position.x << std::endl;
- 
+    
   }
+  // Choosing GPU device
+  cl_uint deviceIndex = 0;
+  std::vector<cl::Device> devices; 
+  unsigned numDevices = getDeviceList(devices);
+  device = devices[deviceIndex];
+  std::string name;
+  getDeviceName(device, name);
+  std::cout << "\nUsing OpenCL device: " << name << "\n";
+  chosen_device.push_back(device);
 }
 
 void sortList(std::deque<Agent> &unsortedAgents, unsigned int coord, unsigned int startIndex, unsigned int endIndex){
@@ -251,40 +260,29 @@ void Workspace::bubble_sort_GPU(std::vector<float> &h_agents, std::vector<int> &
 
 
 
-void Workspace::sortAgentsGpu(uint agentsSize, int groupeSize){
-  // Choosing GPU device
-  cl_uint deviceIndex = 0;
-  std::vector<cl::Device> devices; 
-  unsigned numDevices = getDeviceList(devices);
-  cl::Device device = devices[deviceIndex];
-  std::string name;
-  getDeviceName(device, name);
-  std::cout << "\nUsing OpenCL device: " << name << "\n";
-  std::vector<cl::Device> chosen_device;
-  chosen_device.push_back(device);
-
-
+void Workspace::sortAgentsGpu(int groupeSize, std::vector<float> &agentsProjection, int startIndex, int endIndex){
+  
   //Init param
 
   //Initialisation des listes
-  std::vector<float> agentsX = convertAgents(0);
+  
   //Initialisation de la liste d'index  
   std::vector<float> listIndex;
-  for (int j = 0; j < agentsX.size(); j++){
+  for (int j = startIndex; j < endIndex; j++){
     listIndex.push_back(j);
   }
 
 
-  for (int j = 0; j < agentsX.size(); j++){
-      std::cout <<  listIndex[j]<<" : " << agentsX[j] <<" | "  ;
+  for (int j = 0; j < agentsProjection.size(); j++){
+      std::cout <<  listIndex[j]<<" : " << agentsProjection[j] <<" | "  ;
   }
    std::cout << std::endl;
   
 
   //Create the globalGroup as a multiple of the workgroup
-  const int globalSize = (agentsSize / groupeSize) * groupeSize;
-  std::vector<float> h_X_rest(agentsX.begin() + globalSize, agentsX.end());
-  std::vector<float> h_X(agentsX.begin(), agentsX.begin() + globalSize);
+  const int globalSize = ((endIndex-startIndex) / groupeSize) * groupeSize;
+  std::vector<float> h_X_rest(agentsProjection.begin() + globalSize, agentsProjection.end());
+  std::vector<float> h_X(agentsProjection.begin(), agentsProjection.begin() + globalSize);
   
   std::vector<int> h_index_rest(listIndex.begin() + globalSize, listIndex.end());
   std::vector<int> h_index(listIndex.begin(), listIndex.begin() + globalSize);
@@ -484,7 +482,8 @@ void Workspace::move()
 void Workspace::simulate(int nsteps) {
   // store initial positions
     save(0);
-    sortAgentsGpu((uint) agents.size(), 5);
+    std::vector<float> agentsProjection = convertAgents(0);
+    sortAgentsGpu(5, agentsProjection, 0, agentsProjection.size());
     // sortAgentsGpu((uint) agents.size(), 6);
 /*
     // perform nsteps time steps of the simulation

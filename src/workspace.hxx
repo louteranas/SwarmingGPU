@@ -5,6 +5,7 @@
 
 
 
+#include "cl.hpp"
 
 #include "vector.hxx"
 #include "agent.hxx"
@@ -16,6 +17,8 @@ class Workspace
 {
 protected:
   Container agents;
+  std::vector<cl::Device> chosen_device;
+  cl::Device device;
   voxelsContainer sortedAgents;
   unsigned int na;
   //A initialiser
@@ -46,7 +49,7 @@ protected:
   Real domainsize;
   void init();
   void sortAgents();
-  void sortAgentsGpu(uint agentsSize, int groupeSize);
+  void sortAgentsGpu(int groupeSize, std::vector<float> &agentsX, int startIndex, int endIndex);
   void sortAgentsByX();
   void sortAgentsByY();
   void sortAgentsByZ();
