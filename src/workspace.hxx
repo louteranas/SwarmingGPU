@@ -22,7 +22,7 @@ protected:
   voxelsContainer sortedAgents;
   unsigned int na;
   //A initialiser
-  unsigned int sideCount = 3;
+  unsigned int sideCount = 7;
 
   Real dt;
   int time;
@@ -45,6 +45,7 @@ protected:
   // Padding around the domain
   Real padding;
 
+  std::deque<int> listTotaleVoisinsIndex;
 
   Real domainsize;
   void init();
