@@ -65,11 +65,19 @@ protected:
   void getNeighborhoodGPU();
   
 public:
-  Workspace(ArgumentParser &parser, bool enableGPU);
+  Workspace(ArgumentParser &parser, bool enable);
 
+  double start_time;
+  double run_time;
+  double totalSortTimeGPU;
+  double totalSortTimeCPU;
+  double totalmergeTime;
+  double totalNeighboorTimeGPU;
+  double totalNeighboorTimeCPU;
+  util::Timer timer;
   Workspace(size_t nAgents,
   Real wc, Real wa, Real ws,
-  Real rc, Real ra, Real rs, bool enableGPU);
+  Real rc, Real ra, Real rs, bool enable);
   void move();
   void mergeCPU(std::vector<float> &list1, std::vector<float> list2, std::vector<int> &index1, std::vector<int> index2);
   void simulate(int nsteps);

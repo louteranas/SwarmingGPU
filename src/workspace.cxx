@@ -14,9 +14,9 @@
 #include "workspace.hxx"
 
 
-Workspace::Workspace(ArgumentParser &parser, bool enableGPU)
+Workspace::Workspace(ArgumentParser &parser, bool enable)
 {
-  enableGPU = enableGPU;
+  enableGPU = enable;
   na = parser("agents").asInt();
 
   wCohesion = parser("wc").asDouble();
@@ -50,6 +50,11 @@ void Workspace::init(){
   ly = 800.0;
   lz = 800.0;
 
+  totalSortTimeGPU = 0;
+  totalSortTimeCPU = 0;
+  totalmergeTime = 0;
+  totalNeighboorTimeGPU = 0;
+  totalNeighboorTimeCPU = 0;
   padding = 0.02 * lx;
   // Random generator seed
   srand48(std::time(0));
@@ -78,7 +83,7 @@ void Workspace::init(){
   device = devices[deviceIndex];
   std::string name;
   getDeviceName(device, name);
-  std::cout << "\nUsing OpenCL device: " << name << "\n";
+  // std::cout << "\nUsing OpenCL device: " << name << "\n";
   chosen_device.push_back(device);
 }
 
@@ -185,20 +190,31 @@ void Workspace::sortAgentsByZ(){
 void Workspace::sortAgents(){
   if(enableGPU){
     sortAgentsGPU();
-    getNeighborhoodGPU();  
+    start_time = static_cast<double>(timer.getTimeMilliseconds());
+    getNeighborhoodGPU();
+    run_time = (static_cast<double>(timer.getTimeMilliseconds())) - start_time;
+    totalNeighboorTimeGPU += run_time;  
+    // std::cout << totalNeighboorTimeGPU << std::endl;
   }
   else{
+    
+    start_time = static_cast<double>(timer.getTimeMilliseconds()) ;
 
+    // std::cout << start_time << "\n";
     // we first sort by X to create YZ planes
     this->sortAgentsByX();
     // we then sort by Y to create lines
     this->sortAgentsByY();
     // we finally sort by Z to create voxels
     this->sortAgentsByZ();
-
+    run_time = (static_cast<double>(timer.getTimeMilliseconds())) - start_time;
+    totalSortTimeCPU += run_time;
+    start_time = static_cast<double>(timer.getTimeMilliseconds());
     for (uint i = 0; i < agents.size(); i++){
       getNeighborhood(i);
     }
+    run_time = (static_cast<double>(timer.getTimeMilliseconds())) - start_time;
+    totalNeighboorTimeCPU += run_time;
   }
   
   
@@ -273,7 +289,7 @@ std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsPr
   //Init param
 
   //Initialisation des listes
-  
+  start_time = static_cast<double>(timer.getTimeMilliseconds());
   //Initialisation de la liste d'index  
   std::vector<float> listIndex;
   for (int j = startIndex; j < endIndex; j++){
@@ -321,8 +337,12 @@ std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsPr
   cl::copy(queue, d_X, h_X.begin(), h_X.end());
   cl::copy(queue, d_index, h_index.begin(), h_index.end());
 
+  run_time = (static_cast<double>(timer.getTimeMilliseconds())) - start_time;
+  totalSortTimeGPU += run_time;
   //==================================================================
   //______________Kernel for merging the things__________
+
+  start_time = static_cast<double>(timer.getTimeMilliseconds());
   cl::Program programMerge(context, util::loadProgram("merging.cl"), true);
   
   
@@ -373,10 +393,13 @@ std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsPr
 
     groupeSize *= 2;
     tempSize = (globalSize / groupeSize) * groupeSize;
+    
   }
 
 
   mergeCPU(tempAgents, tempAgents_reste, tempIndex, tempIndex_reste);
+  run_time = (static_cast<double>(timer.getTimeMilliseconds())) - start_time;
+  totalNeighboorTimeGPU += run_time;
 
   return tempIndex;
 
@@ -585,9 +608,10 @@ void Workspace::simulate(int nsteps) {
         save(step);
       }
       
-      //if (step %100 == 0){
-      //  std::cout << step << std::endl;
-     // }
+    //   if (step %100 == 0){
+    //    std::cout << step << std::endl;
+    //    std::cout <<  << std::endl;
+    //  }
 
 
     }

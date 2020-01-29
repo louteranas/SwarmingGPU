@@ -96,11 +96,11 @@ class ArgumentParser
           exit (8);
         }
       }
-      std::cout<<"The simulation will be executed with the following parameters "<<std::endl;
-      for (std::map<std::string,Value>::const_iterator it = mapArguments.begin(); it != mapArguments.end(); ++it) {
-        std::cout << "[-"<< it->first << " "<< it->second.asString() <<" ] ";
-      }
-      std::cout<<std::endl;
+      // std::cout<<"The simulation will be executed with the following parameters "<<std::endl;
+      // for (std::map<std::string,Value>::const_iterator it = mapArguments.begin(); it != mapArguments.end(); ++it) {
+      //   std::cout << "[-"<< it->first << " "<< it->second.asString() <<" ] ";
+      // }
+      // std::cout<<std::endl;
     }
 
     void usage(void) const {
