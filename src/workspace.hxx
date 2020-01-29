@@ -22,7 +22,7 @@ protected:
   voxelsContainer sortedAgents;
   unsigned int na;
   //A initialiser
-  unsigned int sideCount = 7;
+  unsigned int sideCount = 3;
 
   Real dt;
   int time;
@@ -45,6 +45,8 @@ protected:
   // Padding around the domain
   Real padding;
 
+  bool enableGPU;
+
   std::deque<int> listTotaleVoisinsIndex;
 
   Real domainsize;
@@ -63,11 +65,11 @@ protected:
   void getNeighborhoodGPU();
   
 public:
-  Workspace(ArgumentParser &parser);
+  Workspace(ArgumentParser &parser, bool enableGPU);
 
   Workspace(size_t nAgents,
   Real wc, Real wa, Real ws,
-  Real rc, Real ra, Real rs);
+  Real rc, Real ra, Real rs, bool enableGPU);
   void move();
   void mergeCPU(std::vector<float> &list1, std::vector<float> list2, std::vector<int> &index1, std::vector<int> index2);
   void simulate(int nsteps);

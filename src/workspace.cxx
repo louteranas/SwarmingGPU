@@ -14,9 +14,9 @@
 #include "workspace.hxx"
 
 
-Workspace::Workspace(ArgumentParser &parser)
+Workspace::Workspace(ArgumentParser &parser, bool enableGPU)
 {
-
+  enableGPU = enableGPU;
   na = parser("agents").asInt();
 
   wCohesion = parser("wc").asDouble();
@@ -32,12 +32,12 @@ Workspace::Workspace(ArgumentParser &parser)
   time = 0.;
   this->init();
   
-   this->sortAgents();
+  this->sortAgents();
 }
 
 Workspace::Workspace(size_t nAgents,
              Real wc, Real wa, Real ws,
-             Real rc, Real ra, Real rs) :
+             Real rc, Real ra, Real rs, bool enableGPU = false) :
              na(nAgents), dt(.05), time(0),
              wCohesion(wc), wAlignment(wa), wSeparation(ws),
              rCohesion(rc), rAlignment(ra), rSeparation(rs),
@@ -183,29 +183,24 @@ void Workspace::sortAgentsByZ(){
 
 
 void Workspace::sortAgents(){
-  //std::cout << "salut"<< std::endl;
+  if(enableGPU){
+    sortAgentsGPU();
+    getNeighborhoodGPU();  
+  }
+  else{
 
-  sortAgentsGPU();
+    // we first sort by X to create YZ planes
+    this->sortAgentsByX();
+    // we then sort by Y to create lines
+    this->sortAgentsByY();
+    // we finally sort by Z to create voxels
+    this->sortAgentsByZ();
 
-
-  // agents = copyAgents;
-  /*
-  // we first sort by X to create YZ planes
-  this->sortAgentsByX();
-  // we then sort by Y to create lines
-  this->sortAgentsByY();
-  // we finally sort by Z to create voxels
-  this->sortAgentsByZ();
-  // for (auto it : agents){
-  //   std::cout << it.position[0] <<  " ";
-  // }*/
-  // std::cout << std::endl;
-
-
-   getNeighborhoodGPU();  
-  // for (uint i = 0; i < agents.size(); i++){
-  //   getNeighborhood(i);
-  // }
+    for (uint i = 0; i < agents.size(); i++){
+      getNeighborhood(i);
+    }
+  }
+  
   
 }
 
@@ -578,13 +573,13 @@ void Workspace::simulate(int nsteps) {
     // perform nsteps time steps of the simulation
     
     int step = 0;
-    std::cout << " starting the mouvement " << std::endl;
+    // std::cout << " starting the mouvement " << std::endl;
     
     while (step++ < nsteps){
       this->move();
        if (step % 100 == 0){
          this->sortAgents();
-         std::cout << step << std::endl;
+        //  std::cout << step << std::endl;
        }
       if (step % 20 == 0){;
         save(step);

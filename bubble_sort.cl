@@ -24,7 +24,6 @@ __kernel void sortList(
             if ((lid +1 < gs)  && localAgent[lid] > localAgent[lid + 1]){
                 float temp = localAgent[lid];
                 localAgent[lid] = localAgent[lid + 1];
-                localAgent[lid] = localAgent[lid + 1];
                 localAgent[lid + 1] = temp;
                 int tempIndex = localIndex[lid];
                 localIndex[lid] = localIndex[lid + 1];
@@ -35,7 +34,6 @@ __kernel void sortList(
         if (lid % 2 == 1){
             if ((lid + 1 < gs) && localAgent[lid] > localAgent[lid + 1]){
                 float temp = localAgent[lid];
-                localAgent[lid] = localAgent[lid + 1];
                 localAgent[lid] = localAgent[lid + 1];
                 localAgent[lid + 1] = temp;
                 int tempIndex = localIndex[lid];
