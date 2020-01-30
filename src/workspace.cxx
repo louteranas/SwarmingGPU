@@ -332,7 +332,8 @@ std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsPr
   
   
   groupeSize *= 2;
-  int tempSize = (globalSize / groupeSize) * groupeSize;
+  int tempSize = (globalSize / groupeSize);
+
   int counter = 0;
   std::vector<float> tempAgents(h_X.begin(), h_X.end());
   std::vector<float> tempAgents_reste(h_X_rest.begin(), h_X_rest.end());
@@ -343,7 +344,7 @@ std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsPr
 
 
 
-  while(tempSize/groupeSize > 0){
+  while(tempSize > 0){
     //Split the vector into 2 of the good size
     std::vector<float> mergeX(tempAgents.begin(), tempAgents.begin() + tempSize);
     std::vector<float> mergeX_reste(tempAgents.begin() + tempSize, tempAgents.end());
@@ -357,13 +358,11 @@ std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsPr
     cl::Kernel kernel_merge = cl::Kernel(programMerge, "mergeList");
     kernel_merge.setArg(0, d_X);
     kernel_merge.setArg(1, d_index);
-    kernel_merge.setArg(2, tempSize);
     kernel_merge.setArg(3, groupeSize);
 
     global = cl::NDRange(tempSize);
-    local = cl::NDRange(groupeSize);
 
-    queue.enqueueNDRangeKernel(kernel_merge, cl::NullRange, global, local);
+    queue.enqueueNDRangeKernel(kernel_merge, cl::NullRange, global);
     queue.finish();
     cl::copy(queue, d_X, mergeX.begin(), mergeX.end());
     cl::copy(queue, d_index, mergeIndex.begin(), mergeIndex.end());
@@ -377,7 +376,7 @@ std::vector<int> Workspace::sortGPU(int groupeSize, std::vector<float> &agentsPr
 
 
     groupeSize *= 2;
-    tempSize = (globalSize / groupeSize) * groupeSize;
+    tempSize = (globalSize / groupeSize);
   }
 
 
@@ -530,7 +529,7 @@ void Workspace::move()
 void Workspace::sortAgentsByComponentGPU(int coordIndex, int startIndex, int endIndex){
   std::vector<float> agentsProjection = convertAgents(coordIndex);
 
-  std::vector<int> agentsIndex  = sortGPU(32, agentsProjection, startIndex, endIndex);
+  std::vector<int> agentsIndex  = sortGPU(16, agentsProjection, startIndex, endIndex);
   std::vector<Agent> tempAgents;
 
   for (int i = 0 ; i < endIndex - startIndex; i++){
