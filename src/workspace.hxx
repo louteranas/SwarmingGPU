@@ -51,10 +51,11 @@ protected:
 
   Real domainsize;
   void init();
-  void sortAgents();
+  void sortAgents(int groupeSize = 16);
   std::vector<int> sortGPU(int groupeSize, std::vector<float> &agentsX, int startIndex, int endIndex);
-  void sortAgentsByComponentGPU(int coordIndex, int startIndex, int endIndex);
-  void sortAgentsGPU();
+  void sortAgentsByComponentGPU(int coordIndex, int startIndex, int endIndex, int groupeSize);
+  void sortList(std::deque<Agent> &unsortedAgents, unsigned int coord, unsigned int startIndex, unsigned int endIndex);
+  void sortAgentsGPU(int grouopeSize);
   void sortAgentsByX();
   void sortAgentsByY();
   void sortAgentsByZ();
@@ -65,7 +66,7 @@ protected:
   void getNeighborhoodGPU();
   
 public:
-  Workspace(ArgumentParser &parser, bool enable);
+  Workspace(ArgumentParser &parser, bool enable, int groupeSize);
 
   double start_time;
   double run_time;
@@ -74,13 +75,14 @@ public:
   double totalmergeTime;
   double totalNeighboorTimeGPU;
   double totalNeighboorTimeCPU;
+  double totalMoveTime;
   util::Timer timer;
   Workspace(size_t nAgents,
   Real wc, Real wa, Real ws,
   Real rc, Real ra, Real rs, bool enable);
   void move();
   void mergeCPU(std::vector<float> &list1, std::vector<float> list2, std::vector<int> &index1, std::vector<int> index2);
-  void simulate(int nsteps);
+  void simulate(int nsteps, int groupeSize);
   void save(int stepid);
 };
 
